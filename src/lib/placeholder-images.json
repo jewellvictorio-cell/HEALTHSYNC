@@ -50,9 +50,9 @@
     },
     {
       "id": "app-logo",
-      "description": "HealthSync Medical Solutions Corporation Logo",
-      "imageUrl": "https://picsum.photos/seed/healthsync-logo/200/200",
-      "imageHint": "medical logo"
+      "description": "HealthSync Medical Solutions Corporation Logo - Teal square with dark blue dot",
+      "imageUrl": "https://picsum.photos/seed/healthsync-logo/400/400",
+      "imageHint": "medical logo teal blue"
     }
   ]
 }
