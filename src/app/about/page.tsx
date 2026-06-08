@@ -19,7 +19,7 @@ export default function AboutPage() {
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-headline font-bold mb-6">Our Mission to Heal</h1>
             <p className="text-xl text-secondary-foreground/70 leading-relaxed">
-              Discover why HealthSync Medical Solutions is the preferred partner for healthcare excellence in the Philippines.
+              Discover why Healthsync Medical Solutions Corporation is the preferred partner for healthcare excellence in the Philippines.
             </p>
           </div>
         </div>
@@ -30,14 +30,24 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl font-headline font-bold text-secondary">ABOUT US</h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed text-lg">
+              <h2 className="text-3xl font-headline font-bold text-secondary uppercase tracking-tight">ABOUT US</h2>
+              <div className="space-y-6 text-muted-foreground leading-relaxed text-lg">
                 <p>
                   Healthsync Medical Equipment and Supplies Trading is a trusted partner in the world of medical equipment supply.
                 </p>
-                <p>
-                  ✔ With a focus on quality and reliability, we are dedicated to providing healthcare professionals and institutions with cutting-edge solutions.
-                </p>
+                <ul className="space-y-4">
+                  {[
+                    "With a focus on quality and reliability, we are dedicated to providing healthcare professionals and institutions with cutting-edge solutions.",
+                    "Our commitment is to enhance patient care by delivering a diverse range of high-quality medical equipment tailored to meet the unique needs of modern healthcare practices.",
+                    "We prioritize customer satisfaction, ensuring seamless access to essential resources for healthcare delivery.",
+                    "Choose us for dependable service, top-notch products, and a commitment to advancing healthcare standards."
+                  ].map((text, i) => (
+                    <li key={i} className="flex gap-3">
+                      <CheckCircle2 className="h-6 w-6 text-primary shrink-0 mt-1" />
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
             <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl">
