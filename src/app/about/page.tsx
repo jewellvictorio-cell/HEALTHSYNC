@@ -18,7 +18,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl font-headline font-bold text-secondary uppercase tracking-tight">ABOUT US</h2>
+              <h1 className="text-3xl font-headline font-bold text-secondary uppercase tracking-tight">ABOUT US</h1>
               <div className="space-y-6 text-muted-foreground leading-relaxed text-lg">
                 <p>
                   Healthsync Medical Equipment and Supplies Trading is a trusted partner in the world of medical equipment supply.
