@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Quote, Landmark, Building2, Globe } from "lucide-react"
 
 const categories = [
-  { title: "Government Hospitals", icon: Landmark, count: "50+" },
+  { title: "Government Hospitals", icon: Landmark, count: "6" },
   { title: "Private Medical Centers", icon: Building2, count: "120+" },
   { title: "Clinical Laboratories", icon: Globe, count: "200+" }
 ]
