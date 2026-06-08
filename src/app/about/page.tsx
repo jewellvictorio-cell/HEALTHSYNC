@@ -33,7 +33,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-headline font-bold text-secondary">ABOUT US</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed text-lg">
                 <p>
-                  HealthSync Medical Solutions Corporation is more than just a provider of equipment. We are a dedicated team of professionals committed to bridging the gap between advanced medical technology and clinical implementation.
+                  Healthsync Medical Equipment and Supplies Trading is a trusted partner in the world of medical equipment supply.
                 </p>
                 <p>
                   Established with a vision to revolutionize the local healthcare landscape, we specialize in high-end laboratory gear, surgical equipment, and essential medical consumables that meet international safety standards.
