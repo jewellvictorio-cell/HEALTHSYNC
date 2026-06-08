@@ -4,7 +4,7 @@ import { Quote, Landmark, Building2, Globe, Heart, ShieldCheck, Users } from "lu
 
 const stats = [
   { title: "Government Hospitals", icon: Landmark, count: "6" },
-  { title: "Private Medical Centers", icon: Building2, count: "6" }
+  { title: "Private Medical Centers", icon: Building2, count: "7" }
 ]
 
 const govHospitals = [
@@ -20,6 +20,7 @@ const privateHospitals = [
   "Binangonan Lakeview Hospital",
   "Lorma Medical Center",
   "Pag-asa Hospital",
+  "San Isidro Hospital",
   "San Lorenzo Hospital Health Management Co., Inc.",
   "Bermudez Polymeric Hospital",
   "Catanduanes Doctors Hospital"
