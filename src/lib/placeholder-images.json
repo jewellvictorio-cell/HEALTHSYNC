@@ -50,9 +50,9 @@
     },
     {
       "id": "app-logo",
-      "description": "HealthSync Medical Solutions Corporation Logo - Teal square outline with dark blue dot",
+      "description": "HealthSync Medical Solutions Corporation Logo - Teal and dark blue medical branding",
       "imageUrl": "https://picsum.photos/seed/healthsync-logo/400/400",
-      "imageHint": "teal square"
+      "imageHint": "medical logo"
     }
   ]
 }
