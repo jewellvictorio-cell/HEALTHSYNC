@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -23,7 +22,7 @@ const products = [
   ...[
     "Anesthesia Machine", "Anesthesia Vaporizer", "Aspirator", "Autoclave Machine", 
     "CPAP/BiPAP", "Defibrillator", "ECG Machine", "Electrosurgical Unit", 
-    "Fetal Monitor", "Infusion", "Nebulizer", "Oxygen Concentrator", 
+    "Fetal Monitor", "Infusion Device", "Nebulizer", "Oxygen Concentrator", 
     "Patient Monitor", "Patient Scale", "Pulse Oximeter", "Radiant Warmer", "Ventilator Machine"
   ].map((name, i) => ({
     id: `me-${i}`,
