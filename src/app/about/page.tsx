@@ -14,12 +14,12 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col">
       {/* Profile Section */}
-      <section className="py-24">
+      <section className="py-24 bg-secondary text-white">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-6xl font-headline font-bold text-secondary uppercase tracking-tight">ABOUT US</h1>
-              <div className="space-y-6 text-muted-foreground leading-relaxed text-lg">
+              <h1 className="text-4xl md:text-6xl font-headline font-bold text-white uppercase tracking-tight">ABOUT US</h1>
+              <div className="space-y-6 text-white/90 leading-relaxed text-lg">
                 <p>
                   Healthsync Medical Equipment and Supplies Trading is a trusted partner in the world of medical equipment supply.
                 </p>
@@ -31,14 +31,14 @@ export default function AboutPage() {
                     "Choose us for dependable service, top-notch products, and a commitment to advancing healthcare standards."
                   ].map((text, i) => (
                     <li key={i} className="flex gap-3">
-                      <CheckCircle2 className="h-6 w-6 text-primary shrink-0 mt-1" />
+                      <CheckCircle2 className="h-6 w-6 text-accent shrink-0 mt-1" />
                       <span>{text}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl ring-8 ring-white/10">
               <Image 
                 src="https://picsum.photos/seed/about_profile/800/800" 
                 alt="HealthSync Team at Work" 
