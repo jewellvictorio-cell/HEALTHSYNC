@@ -26,11 +26,11 @@ export function Navbar() {
       <nav className="container mx-auto flex h-20 items-center justify-between px-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <div className="bg-primary p-2 rounded-lg">
+            <div className="bg-primary p-2 rounded-lg shrink-0">
               <Activity className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="font-headline text-xl font-bold tracking-tight text-secondary">
-              HealthSync
+            <span className="font-headline text-lg font-bold tracking-tight text-secondary leading-tight max-w-[200px] sm:max-w-none">
+              Healthsync Medical Solutions Corporation
             </span>
           </Link>
         </div>
@@ -77,10 +77,12 @@ export function Navbar() {
       )}>
         <div className="flex items-center justify-between h-20 px-4">
           <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-            <div className="bg-primary p-2 rounded-lg">
+            <div className="bg-primary p-2 rounded-lg shrink-0">
               <Activity className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="font-headline text-xl font-bold text-secondary">HealthSync</span>
+            <span className="font-headline text-lg font-bold text-secondary leading-tight">
+              Healthsync Medical Solutions Corporation
+            </span>
           </Link>
           <button
             type="button"

@@ -10,11 +10,11 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 lg:gap-8">
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-lg">
+              <div className="bg-primary p-2 rounded-lg shrink-0">
                 <Activity className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="font-headline text-xl font-bold tracking-tight text-white">
-                HealthSync
+              <span className="font-headline text-lg font-bold tracking-tight text-white leading-tight">
+                Healthsync Medical Solutions Corporation
               </span>
             </Link>
             <p className="text-sm text-secondary-foreground/70 max-w-xs">
@@ -88,7 +88,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-secondary-foreground/10 text-center">
           <p className="text-xs text-secondary-foreground/50">
-            &copy; {currentYear} HealthSync Medical Solutions Corporation. All rights reserved.
+            &copy; {currentYear} Healthsync Medical Solutions Corporation. All rights reserved.
           </p>
         </div>
       </div>
