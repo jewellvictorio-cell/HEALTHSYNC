@@ -4,8 +4,7 @@ import { Quote, Landmark, Building2, Globe } from "lucide-react"
 
 const categories = [
   { title: "Government Hospitals", icon: Landmark, count: "6" },
-  { title: "Private Medical Centers", icon: Building2, count: "7" },
-  { title: "Clinical Laboratories", icon: Globe, count: "200+" }
+  { title: "Private Medical Centers", icon: Building2, count: "7" }
 ]
 
 const testimonials = [
@@ -38,7 +37,7 @@ export default function ClientsPage() {
       {/* Stats Section */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {categories.map((c, i) => (
               <Card key={i} className="text-center p-8 border-none shadow-lg bg-muted/30">
                 <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
