@@ -22,7 +22,7 @@ const privateHospitals = [
   "Pag-asa Hospital",
   "San Isidro Hospital",
   "San Lorenzo Hospital Health Management Co., Inc.",
-  "Bermudez Polymeric Hospital",
+  "Bermudez Polymedic Hospital",
   "Catanduanes Doctors Hospital"
 ]
 
