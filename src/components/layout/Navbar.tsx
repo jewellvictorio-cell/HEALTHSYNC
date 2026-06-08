@@ -3,8 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, ChevronRight, Activity } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Menu, X, Activity } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -58,15 +57,8 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-x-4">
-          <Button variant="outline" asChild>
-            <Link href="/contact">Get a Quote</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/products" className="flex items-center gap-1">
-              Explore <ChevronRight className="h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          {/* Action buttons removed as requested */}
         </div>
       </nav>
 
@@ -105,14 +97,6 @@ export function Navbar() {
                   {item.name}
                 </Link>
               ))}
-            </div>
-            <div className="py-6 flex flex-col gap-4">
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>Get a Quote</Link>
-              </Button>
-              <Button className="w-full" asChild>
-                <Link href="/products" onClick={() => setMobileMenuOpen(false)}>Explore Products</Link>
-              </Button>
             </div>
           </div>
         </div>
