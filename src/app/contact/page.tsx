@@ -117,7 +117,7 @@ export default function ContactPage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div className="space-y-2">
                     <h4 className="font-bold">Scan Business Profile</h4>
-                    <p className="text-xs text-secondary-foreground/60">Instant access to our digital profile</p>
+                    <p className="text-xs text-secondary-foreground/60">Instant access to our business profile</p>
                   </div>
                   <div className="bg-white p-2 rounded-lg w-20 h-20">
                      <div className="w-full h-full bg-muted animate-pulse" />
