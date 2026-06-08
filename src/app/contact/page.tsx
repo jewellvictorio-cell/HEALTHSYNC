@@ -90,6 +90,18 @@ export default function ContactPage() {
                 <Card className="border-none shadow-md">
                   <CardContent className="p-6 flex items-start gap-4">
                     <div className="bg-primary/10 p-3 rounded-full text-primary">
+                      <Mail className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary mb-1">Email Us</h4>
+                      <p className="text-sm text-muted-foreground">healthsync.med@gmail.com</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-md">
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full text-primary">
                       <Clock className="h-6 w-6" />
                     </div>
                     <div>

@@ -13,7 +13,7 @@ export function Footer() {
               <div className="bg-primary p-2 rounded-lg shrink-0">
                 <Activity className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="font-headline text-lg font-bold tracking-tight text-white leading-tight">
+              <span className="font-headline text-lg font-bold tracking-tight text-white leading-tight max-w-[200px] sm:max-w-none">
                 Healthsync Medical Solutions Corporation
               </span>
             </Link>
@@ -80,7 +80,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary shrink-0" />
-                <span className="text-sm text-secondary-foreground/70">contact@healthsyncmedical.com</span>
+                <span className="text-sm text-secondary-foreground/70">healthsync.med@gmail.com</span>
               </li>
             </ul>
           </div>
