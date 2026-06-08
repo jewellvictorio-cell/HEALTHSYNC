@@ -1,6 +1,5 @@
 import { Hero } from "@/components/home/Hero"
 import { FinancialCalculator } from "@/components/home/FinancialCalculator"
-import { AIProductRecommender } from "@/components/home/AIProductRecommender"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Activity, Stethoscope, Microscope, Package, Settings, Users, ArrowRight } from "lucide-react"
@@ -111,8 +110,6 @@ export default function Home() {
         </div>
       </section>
 
-      <AIProductRecommender />
-      
       <FinancialCalculator />
 
       {/* CTA Section */}
