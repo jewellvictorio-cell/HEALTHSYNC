@@ -22,7 +22,7 @@ const products = [
   ...[
     "Anesthesia Machine", "Anesthesia Vaporizer", "Aspirator", "Autoclave Machine", 
     "CPAP/BiPAP", "Defibrillator", "ECG Machine", "Electrosurgical Unit", 
-    "Fetal Monitor", "Infusion Device", "Nebulizer", "Oxygen Concentrator", 
+    "Fetal Monitor", "Infant Incubator", "Infusion Device", "Nebulizer", "Operating Light", "Oxygen Concentrator", 
     "Patient Monitor", "Patient Scale", "Pulse Oximeter", "Radiant Warmer", "Ventilator Machine"
   ].map((name, i) => ({
     id: `me-${i}`,
