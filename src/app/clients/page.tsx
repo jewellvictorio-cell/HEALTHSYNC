@@ -4,7 +4,7 @@ import { Landmark, Building2, Globe, Heart, ShieldCheck, Users } from "lucide-re
 
 const stats = [
   { title: "Government Hospitals", icon: Landmark, count: "6" },
-  { title: "Private Medical Centers", icon: Building2, count: "7" }
+  { title: "PRIVATE HOSPITALS", icon: Building2, count: "7" }
 ]
 
 const govHospitals = [
