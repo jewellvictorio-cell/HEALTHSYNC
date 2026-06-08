@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Modern hospital interior with medical equipment",
+      "imageUrl": "https://picsum.photos/seed/healthsync1/1920/1080",
+      "imageHint": "modern hospital"
+    },
+    {
+      "id": "medical-equip",
+      "description": "Professional medical imaging equipment",
+      "imageUrl": "https://picsum.photos/seed/healthsync2/800/600",
+      "imageHint": "medical equipment"
+    },
+    {
+      "id": "lab-equip",
+      "description": "Advanced laboratory testing machine",
+      "imageUrl": "https://picsum.photos/seed/healthsync3/800/600",
+      "imageHint": "laboratory lab"
+    },
+    {
+      "id": "consumables",
+      "description": "Sterilized medical supplies",
+      "imageUrl": "https://picsum.photos/seed/healthsync4/800/600",
+      "imageHint": "medical supplies"
+    },
+    {
+      "id": "packaging",
+      "description": "Healthcare packaging solutions",
+      "imageUrl": "https://picsum.photos/seed/healthsync5/800/600",
+      "imageHint": "medical packaging"
+    },
+    {
+      "id": "owner-photo",
+      "description": "Owner profile picture",
+      "imageUrl": "https://picsum.photos/seed/healthsync-owner/400/400",
+      "imageHint": "professional man"
+    },
+    {
+      "id": "client-logo-1",
+      "description": "Healthcare institution logo 1",
+      "imageUrl": "https://picsum.photos/seed/client1/200/100",
+      "imageHint": "hospital logo"
+    },
+    {
+      "id": "client-logo-2",
+      "description": "Healthcare institution logo 2",
+      "imageUrl": "https://picsum.photos/seed/client2/200/100",
+      "imageHint": "clinic logo"
+    }
+  ]
 }
