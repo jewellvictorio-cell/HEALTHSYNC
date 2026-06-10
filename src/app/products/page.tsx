@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -12,8 +13,8 @@ const categories = [
   "All", 
   "Medical Equipment", 
   "Laboratory Equipment", 
-  "Medical Supplies", 
-  "Healthcare Accessories", 
+  "Consumables | Medical Supplies", 
+  "Accessories | Medical Supplies", 
   "Packaging Solutions"
 ]
 
@@ -22,7 +23,7 @@ const products = [
   ...[
     "Anesthesia Machine", "Anesthesia Vaporizer", "Aspirator", "Autoclave Machine", 
     "CPAP/BiPAP", "Defibrillator", "ECG Machine", "Electrosurgical Unit", 
-    "Fetal Monitor", "Infant Incubator", "Infusion Device", "Nebulizer", "Operating Light", "Oxygen Concentrator", 
+    "Fetal Monitor", "Infusion Device", "Nebulizer", "Oxygen Concentrator", 
     "Patient Monitor", "Patient Scale", "Pulse Oximeter", "Radiant Warmer", "Ventilator Machine"
   ].map((name, i) => ({
     id: `me-${i}`,
@@ -44,34 +45,34 @@ const products = [
     image: `https://picsum.photos/seed/le${i}/400/300`
   })),
 
-  // Medical Supplies (Consumables)
+  // Consumables | Medical Supplies
   ...[
     "Anesthesia Breathing Circuit", "Bacterial Filter", "BP Cuff, Dual Tube (Disposable)", 
     "BP Cuff, Single Tube (Disposable)", "Bubble Humidifier", "Closed Suction Catheter", 
-    "EtCO2 Water Trap", "FHME", "Flex Tube", "Full Face Mask (CPAP, BiPAP)", 
-    "Gas Sampling Line", "High Flow Consumables Set", "Humidification Chamber", 
+    "EtCO₂ Water Trap", "FHME", "Flex Tube", "Full Face Mask (CPAP, BiPAP)", 
+    "Gas Sampling Line", "High Flow Consumables", "Humidification Chamber", 
     "Incentive Spirometer", "Nasal Cannula", "NIV Face Mask", "Peak Flowmeter", 
     "Ventilator Breathing Circuit, Dual Limb", "Ventilator Breathing Circuit, Single Limb"
   ].map((name, i) => ({
     id: `ms-c-${i}`,
     name,
-    category: "Medical Supplies",
+    category: "Consumables | Medical Supplies",
     description: `Essential ${name} for respiratory therapy and patient care.`,
     image: `https://picsum.photos/seed/msc${i}/400/300`
   })),
 
-  // Medical Supplies (Accessories)
+  // Accessories | Medical Supplies
   ...[
     "BP Bulb", "BP Cuff, Dual Tube (Reusable)", "BP Cuff, Dual Tube (Disposable)", 
     "ECG Leads (3, 5, 12 Leads)", "Flow Sensor, Ventilator", 
     "High-Pressure Regulator, Compressed Air", "High-Pressure Regulator, Oxygen", 
     "NIBP Hose, Coiled", "NIBP Hose, Dual Tube", "NIBP Hose, Single Tube", 
     "Oxygen Flowmeter, 15 LPM", "Oxygen Flowmeter, 70 LPM", "Oxygen/Air Blender", 
-    "SpO2 Sensor", "SpO2 Trunk Cable", "Temperature Probe"
+    "SpO₂ Sensor", "SpO₂ Trunk Cable", "Temperature Probe"
   ].map((name, i) => ({
     id: `ms-a-${i}`,
     name,
-    category: "Healthcare Accessories",
+    category: "Accessories | Medical Supplies",
     description: `Durable ${name} compatible with various medical monitor systems.`,
     image: `https://picsum.photos/seed/msa${i}/400/300`
   })),
@@ -81,21 +82,21 @@ const products = [
     id: "pkg-1",
     name: "Standard Packaging",
     category: "Packaging Solutions",
-    description: "Secure and reliable packaging for everyday medical products.",
+    description: "Secure and reliable packaging for everyday products.",
     image: "https://picsum.photos/seed/pkg1/400/300"
   },
   {
     id: "pkg-2",
     name: "Foam Protection Packaging",
     category: "Packaging Solutions",
-    description: "Enhanced protection with high-quality foam for delicate clinical equipment.",
+    description: "Enhanced protection with high-quality foam for delicate equipment.",
     image: "https://picsum.photos/seed/pkg2/400/300"
   },
   {
     id: "pkg-3",
     name: "Wooden Crate Packaging",
     category: "Packaging Solutions",
-    description: "Heavy-duty wooden crates for maximum safety of valuable medical hardware.",
+    description: "Heavy-duty wooden crates for maximum safety of valuable equipment.",
     image: "https://picsum.photos/seed/pkg3/400/300"
   },
   {
@@ -108,16 +109,23 @@ const products = [
 ]
 
 const packagingBenefits = [
-  { title: "Maximum Protection", desc: "Ensures products are protected from damage, moisture, dust, and impact.", icon: ShieldCheck },
+  { title: "Maximum Protection", desc: "Ensure products are protected from damage, moisture, dust, and impact.", icon: ShieldCheck },
   { title: "Safe Transportation", desc: "Designed to withstand the rigors of transportation and long-distance delivery.", icon: Truck },
   { title: "Quality Materials", desc: "We use high-quality packaging materials that meet international standards.", icon: Box },
   { title: "Eco-Friendly Options", desc: "Sustainable packaging solutions that reduce environmental impact.", icon: Recycle },
   { title: "Tailored Solutions", desc: "Custom packaging solutions tailored to your specific needs.", icon: CheckCircle2 }
 ]
 
-export default function ProductsPage() {
-  const [activeCategory, setActiveCategory] = React.useState("All")
-  const [searchTerm, setSearchTerm] = React.useState("")
+function ProductsContent() {
+  const searchParams = useSearchParams()
+  
+  const [activeCategory, setActiveCategory] = React.useState(searchParams.get("category") || "All")
+  const [searchTerm, setSearchTerm] = React.useState(searchParams.get("search") || "")
+
+  React.useEffect(() => {
+    setActiveCategory(searchParams.get("category") || "All")
+    setSearchTerm(searchParams.get("search") || "")
+  }, [searchParams])
 
   const filteredProducts = products.filter(p => {
     const matchesCategory = activeCategory === "All" || p.category === activeCategory
@@ -264,11 +272,25 @@ export default function ProductsPage() {
                     </Card>
                   ))}
                 </div>
+                <div className="mt-16 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-1000">
+                  <div className="inline-block bg-white p-8 rounded-2xl border-2 border-primary/10 shadow-xl shadow-primary/5">
+                    <h3 className="text-2xl font-headline font-bold text-secondary mb-3">PACKED WITH CARE, DELIVERED WITH CONFIDENCE.</h3>
+                    <p className="text-muted-foreground text-lg">Your equipment&apos;s safety is our priority.</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading products...</div>}>
+      <ProductsContent />
+    </React.Suspense>
   )
 }

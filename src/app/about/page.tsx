@@ -41,7 +41,7 @@ export default function AboutPage() {
               <h1 className="text-4xl md:text-6xl font-headline font-bold text-white uppercase tracking-tight">ABOUT US</h1>
               <div className="space-y-6 text-white/90 leading-relaxed text-lg">
                 <p>
-                  Healthsync Medical Equipment and Supplies Trading is a trusted partner in the world of medical equipment supply.
+                  Healthsync Medical Solutions Corporation is a trusted partner in the world of medical equipment supply.
                 </p>
                 <ul className="space-y-4">
                   {[
@@ -60,7 +60,7 @@ export default function AboutPage() {
             </div>
             <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl ring-8 ring-white/10 animate-in fade-in zoom-in-95 duration-1000 delay-300 fill-mode-both">
               <Image 
-                src="https://picsum.photos/seed/about_profile/800/800" 
+                src="/images/about_hero_medical.png" 
                 alt="HealthSync Team at Work" 
                 fill 
                 className="object-cover transition-transform duration-700 hover:scale-105"
@@ -127,16 +127,23 @@ export default function AboutPage() {
             <h2 className="text-3xl font-headline font-bold text-secondary mb-4">Management & Leadership</h2>
             <p className="text-muted-foreground">The experts driving healthcare innovation.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-            {[1, 2, 3].map((id, i) => (
-              <div key={id} className="text-center space-y-4 animate-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: `${i * 200}ms` }}>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            {[
+              { name: "Renz Marlon Buban", role: "President" },
+              { name: "Riena Mae Buban", role: "Corporate Secretary" },
+              { name: "John Michael Siochi", role: "Chief Finance Officer" },
+              { name: "Jobelle Velasquez", role: "Finance Analyst" },
+              { name: "Donmark Capispisan", role: "Technical Coordinator" },
+              { name: "Marwinn Vicente", role: "Sales Coordinator" }
+            ].map((member, i) => (
+              <div key={member.name} className="text-center space-y-4 animate-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: `${i * 150}ms` }}>
                 <div className="relative aspect-square rounded-2xl overflow-hidden shadow-md mx-auto max-w-[250px] group">
-                  <Image src={`https://picsum.photos/seed/leader${id}/400/400`} alt="Executive" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <Image src={`https://picsum.photos/seed/${member.name.replace(/\s+/g, '')}/400/400`} alt={member.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-secondary/0 group-hover:bg-secondary/20 transition-all duration-500" />
                 </div>
                 <div className="transition-transform duration-300 hover:translate-y-[-4px]">
-                  <h4 className="font-bold text-lg text-secondary">Leadership Member {id}</h4>
-                  <p className="text-sm text-primary font-semibold uppercase tracking-widest">Executive Management</p>
+                  <h4 className="font-bold text-lg text-secondary">{member.name}</h4>
+                  <p className="text-sm text-primary font-semibold uppercase tracking-widest">{member.role}</p>
                 </div>
               </div>
             ))}

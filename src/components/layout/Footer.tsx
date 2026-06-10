@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
+import { Facebook, Mail, MapPin, Phone } from "lucide-react"
 import { Logo } from "./Logo"
 
 export function Footer() {
@@ -13,21 +13,15 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2">
               <Logo className="h-8 w-8 md:h-10 md:w-10 shrink-0" variant="light" />
               <span className="font-headline text-lg font-bold tracking-tight text-white leading-tight">
-                Healthsync Medical
+                Healthsync Medical Solutions Corporation
               </span>
             </Link>
             <p className="text-sm text-secondary-foreground/70 max-w-xs leading-relaxed">
               Where Faith Meets Excellence in Healthcare. Providing quality medical solutions across the Philippines.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
+              <Link href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
                 <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
-                <Linkedin className="h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -35,10 +29,17 @@ export function Footer() {
           <div>
             <h3 className="font-headline text-sm font-semibold uppercase tracking-wider text-white mb-6">Quick Links</h3>
             <ul className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-4">
-              {['Home', 'About Us', 'Products', 'Offers', 'Careers', 'Contact'].map((item) => (
-                <li key={item}>
-                  <Link href={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`} className="text-sm text-secondary-foreground/70 hover:text-white transition-colors">
-                    {item}
+              {[
+                { label: 'Home', href: '/' },
+                { label: 'About Us', href: '/about' },
+                { label: 'Products', href: '/products' },
+                { label: 'Offers', href: '/offers' },
+                { label: 'Careers', href: '/careers' },
+                { label: 'Contact', href: '/contact' },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="text-sm text-secondary-foreground/70 hover:text-white transition-colors">
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -85,9 +86,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10 text-center">
+        <div className="mt-12 pt-8 border-t border-white/10 text-center space-y-2">
           <p className="text-[10px] md:text-xs text-secondary-foreground/50">
             &copy; {currentYear} Healthsync Medical Solutions Corporation. All rights reserved.
+          </p>
+          <p className="text-[10px] text-secondary-foreground/30">
+            Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines
           </p>
         </div>
       </div>

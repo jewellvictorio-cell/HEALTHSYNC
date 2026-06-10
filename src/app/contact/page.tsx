@@ -1,11 +1,50 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Phone, Mail, MapPin, Clock, Send } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Phone, Mail, MapPin, Clock, Send, AlertCircle, CheckCircle } from "lucide-react"
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    department: "",
+    message: ""
+  })
+  const [errorMsg, setErrorMsg] = useState("")
+  const [successMsg, setSuccessMsg] = useState("")
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Check if any required field is empty
+    if (!formData.name || !formData.email || !formData.phone || !formData.message || !formData.department) {
+      setErrorMsg("PLEASE FILL THE REQUIRED FIELD.")
+      setSuccessMsg("")
+      return
+    }
+
+    // Success
+    setErrorMsg("")
+    setSuccessMsg("MESSAGE SENT SUCCESSFULLY!")
+    setFormData({ name: "", email: "", phone: "", department: "", message: "" })
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      setSuccessMsg("")
+    }, 5000)
+  }
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
   return (
     <div className="flex flex-col min-h-screen overflow-hidden">
       {/* Header */}
@@ -28,33 +67,88 @@ export default function ContactPage() {
                 <CardTitle className="text-2xl font-headline text-secondary flex items-center gap-3">
                   <Send className="h-6 w-6 text-primary" /> Request a Quote
                 </CardTitle>
-                <CardDescription>Fill out the form below and we'll get back to you within 24 hours.</CardDescription>
+                <CardDescription>Fill out the form below and we'll route it to the appropriate department.</CardDescription>
               </CardHeader>
               <CardContent className="p-8">
-                <form className="grid sm:grid-cols-2 gap-6">
-                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '200ms' }}>
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" placeholder="Jane" className="focus:border-primary border-2" />
+                <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-6">
+                  
+                  {/* Department Dropdown */}
+                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
+                    <Label>Inquiry Type (Department)</Label>
+                    <Select value={formData.department} onValueChange={(val) => handleChange("department", val)}>
+                      <SelectTrigger className="focus:ring-primary border-2 h-11">
+                        <SelectValue placeholder="Select a department to contact..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="quotation">Quotation (Official Email)</SelectItem>
+                        <SelectItem value="sales">Sales (Products Inquiry)</SelectItem>
+                        <SelectItem value="hr">Human Resources (Careers)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '200ms' }}>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input 
+                      id="name" 
+                      placeholder="Your Name" 
+                      value={formData.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
+                      className="focus-visible:ring-primary border-2 h-11" 
+                    />
+                  </div>
+
                   <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '300ms' }}>
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" placeholder="Doe" className="focus:border-primary border-2" />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '400ms' }}>
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="jane@example.com" className="focus:border-primary border-2" />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="Your Email Address" 
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      className="focus-visible:ring-primary border-2 h-11" 
+                    />
                   </div>
-                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '500ms' }}>
+
+                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '400ms' }}>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+63" className="focus:border-primary border-2" />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+63" 
+                      value={formData.phone}
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                      className="focus-visible:ring-primary border-2 h-11" 
+                    />
                   </div>
-                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '600ms' }}>
-                    <Label htmlFor="message">Your Message</Label>
-                    <Textarea id="message" placeholder="Describe your equipment needs..." className="min-h-[150px] focus:border-primary border-2" />
+
+                  <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '500ms' }}>
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea 
+                      id="message" 
+                      placeholder="Type your message here..." 
+                      value={formData.message}
+                      onChange={(e) => handleChange("message", e.target.value)}
+                      className="min-h-[150px] focus-visible:ring-primary border-2" 
+                    />
                   </div>
-                  <div className="sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '700ms' }}>
-                    <Button className="w-full h-12 text-base font-bold uppercase tracking-widest transition-all hover:scale-[1.01] shadow-lg shadow-primary/20">
-                      SUBMIT REQUEST
+
+                  {/* Validation Messages */}
+                  <div className="sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '600ms' }}>
+                    {errorMsg && (
+                      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-destructive bg-destructive/10 p-4 rounded-md border border-destructive/20 animate-in fade-in zoom-in-95">
+                        <AlertCircle className="h-5 w-5" />
+                        {errorMsg}
+                      </div>
+                    )}
+                    {successMsg && (
+                      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-emerald-600 bg-emerald-500/10 p-4 rounded-md border border-emerald-500/20 animate-in fade-in zoom-in-95">
+                        <CheckCircle className="h-5 w-5" />
+                        {successMsg}
+                      </div>
+                    )}
+                    <Button type="submit" className="w-full h-12 text-base font-bold uppercase tracking-widest transition-all hover:scale-[1.01] shadow-lg shadow-primary/20">
+                      SEND MESSAGE
                     </Button>
                   </div>
                 </form>
@@ -89,7 +183,7 @@ export default function ContactPage() {
               {/* Map Placeholder */}
               <div className="rounded-2xl overflow-hidden h-[300px] shadow-lg border relative animate-in zoom-in-95 duration-1000 delay-700 fill-mode-both group">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15448.97159938971!2d121.18141416977539!3d14.499092499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d8c58066f2b7%3A0x8898980877995f51!2sHealthsync+Medical+equipment+and+Supplies+Trading!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph"
+                  src="https://maps.google.com/maps?q=Healthsync+Medical+equipment+and+Supplies+Trading,+Binangonan,+Rizal&t=&z=16&ie=UTF8&iwloc=&output=embed"
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 

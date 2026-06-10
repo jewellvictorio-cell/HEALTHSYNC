@@ -18,9 +18,13 @@ export function FinancialCalculator() {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-3xl font-headline font-bold text-secondary mb-4">Financial Flexibility for Your Institution</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We offer affordable monthly payments and business-friendly financing to help you upgrade your medical hardware without the heavy upfront costs.
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary mb-4">
+              Financing Options
+            </div>
+            <h2 className="text-3xl font-headline font-bold text-secondary mb-4">Equipment Financing Estimator</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              We offer affordable monthly payments and business-friendly financing to help your facility upgrade
+              medical hardware without the burden of heavy upfront costs.
             </p>
           </div>
 
