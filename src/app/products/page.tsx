@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight } from "lucide-react"
+import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+import { getProducts, type Product } from "@/lib/store"
 
 const categories = [
   "All", 
@@ -18,95 +20,7 @@ const categories = [
   "Packaging Solutions"
 ]
 
-const products = [
-  // Medical Equipment
-  ...[
-    "Anesthesia Machine", "Anesthesia Vaporizer", "Aspirator", "Autoclave Machine", 
-    "CPAP/BiPAP", "Defibrillator", "ECG Machine", "Electrosurgical Unit", 
-    "Fetal Monitor", "Infusion Device", "Nebulizer", "Oxygen Concentrator", 
-    "Patient Monitor", "Patient Scale", "Pulse Oximeter", "Radiant Warmer", "Ventilator Machine"
-  ].map((name, i) => ({
-    id: `me-${i}`,
-    name,
-    category: "Medical Equipment",
-    description: `High-quality ${name} designed for professional clinical use and precision diagnostics.`,
-    image: `https://picsum.photos/seed/me${i}/400/300`
-  })),
 
-  // Laboratory Equipment
-  ...[
-    "Centrifuge", "Freezer", "Incubator", "Lab Oven", "Lab Refrigerator", 
-    "Microscope", "Pipette", "pH Meter", "Thermohygrometer", "Water Bath"
-  ].map((name, i) => ({
-    id: `le-${i}`,
-    name,
-    category: "Laboratory Equipment",
-    description: `Precision ${name} for clinical laboratories and research institutions.`,
-    image: `https://picsum.photos/seed/le${i}/400/300`
-  })),
-
-  // Consumables | Medical Supplies
-  ...[
-    "Anesthesia Breathing Circuit", "Bacterial Filter", "BP Cuff, Dual Tube (Disposable)", 
-    "BP Cuff, Single Tube (Disposable)", "Bubble Humidifier", "Closed Suction Catheter", 
-    "EtCO₂ Water Trap", "FHME", "Flex Tube", "Full Face Mask (CPAP, BiPAP)", 
-    "Gas Sampling Line", "High Flow Consumables", "Humidification Chamber", 
-    "Incentive Spirometer", "Nasal Cannula", "NIV Face Mask", "Peak Flowmeter", 
-    "Ventilator Breathing Circuit, Dual Limb", "Ventilator Breathing Circuit, Single Limb"
-  ].map((name, i) => ({
-    id: `ms-c-${i}`,
-    name,
-    category: "Consumables | Medical Supplies",
-    description: `Essential ${name} for respiratory therapy and patient care.`,
-    image: `https://picsum.photos/seed/msc${i}/400/300`
-  })),
-
-  // Accessories | Medical Supplies
-  ...[
-    "BP Bulb", "BP Cuff, Dual Tube (Reusable)", "BP Cuff, Dual Tube (Disposable)", 
-    "ECG Leads (3, 5, 12 Leads)", "Flow Sensor, Ventilator", 
-    "High-Pressure Regulator, Compressed Air", "High-Pressure Regulator, Oxygen", 
-    "NIBP Hose, Coiled", "NIBP Hose, Dual Tube", "NIBP Hose, Single Tube", 
-    "Oxygen Flowmeter, 15 LPM", "Oxygen Flowmeter, 70 LPM", "Oxygen/Air Blender", 
-    "SpO₂ Sensor", "SpO₂ Trunk Cable", "Temperature Probe"
-  ].map((name, i) => ({
-    id: `ms-a-${i}`,
-    name,
-    category: "Accessories | Medical Supplies",
-    description: `Durable ${name} compatible with various medical monitor systems.`,
-    image: `https://picsum.photos/seed/msa${i}/400/300`
-  })),
-
-  // Packaging Solutions
-  {
-    id: "pkg-1",
-    name: "Standard Packaging",
-    category: "Packaging Solutions",
-    description: "Secure and reliable packaging for everyday products.",
-    image: "https://picsum.photos/seed/pkg1/400/300"
-  },
-  {
-    id: "pkg-2",
-    name: "Foam Protection Packaging",
-    category: "Packaging Solutions",
-    description: "Enhanced protection with high-quality foam for delicate equipment.",
-    image: "https://picsum.photos/seed/pkg2/400/300"
-  },
-  {
-    id: "pkg-3",
-    name: "Wooden Crate Packaging",
-    category: "Packaging Solutions",
-    description: "Heavy-duty wooden crates for maximum safety of valuable equipment.",
-    image: "https://picsum.photos/seed/pkg3/400/300"
-  },
-  {
-    id: "pkg-4",
-    name: "Export Grade Packaging",
-    category: "Packaging Solutions",
-    description: "ISPM-15 compliant packaging for safe and secure international shipping.",
-    image: "https://picsum.photos/seed/pkg4/400/300"
-  }
-]
 
 const packagingBenefits = [
   { title: "Maximum Protection", desc: "Ensure products are protected from damage, moisture, dust, and impact.", icon: ShieldCheck },
@@ -119,20 +33,46 @@ const packagingBenefits = [
 function ProductsContent() {
   const searchParams = useSearchParams()
   
+  const [allProducts,    setAllProducts]    = React.useState<Product[]>([])
   const [activeCategory, setActiveCategory] = React.useState(searchParams.get("category") || "All")
-  const [searchTerm, setSearchTerm] = React.useState(searchParams.get("search") || "")
+  const [searchTerm,     setSearchTerm]     = React.useState(searchParams.get("search") || "")
+
+  React.useEffect(() => {
+    setAllProducts(getProducts())
+  }, [])
 
   React.useEffect(() => {
     setActiveCategory(searchParams.get("category") || "All")
     setSearchTerm(searchParams.get("search") || "")
   }, [searchParams])
 
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = allProducts.filter(p => {
     const matchesCategory = activeCategory === "All" || p.category === activeCategory
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           p.description.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesCategory && matchesSearch
   })
+
+  function handleViewBrochure(e: React.MouseEvent, base64: string) {
+    e.preventDefault()
+    try {
+      const arr = base64.split(',')
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf'
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
+      while(n--){
+        u8arr[n] = bstr.charCodeAt(n)
+      }
+      const blob = new Blob([u8arr], { type: mime })
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (err) {
+      console.error(err)
+      alert("Failed to open brochure.")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-muted/20 pb-24 overflow-hidden">
@@ -226,11 +166,21 @@ function ProductsContent() {
                       <CardDescription className="line-clamp-2 text-sm leading-relaxed min-h-[40px]">{product.description}</CardDescription>
                     </CardHeader>
                     <CardFooter className="p-6 pt-4 mt-auto border-t bg-muted/5 grid grid-cols-2 gap-3">
-                      <Button variant="outline" className="w-full gap-2 font-bold text-[10px] uppercase tracking-wider h-11 border-2 transition-all hover:bg-primary hover:text-white hover:border-primary">
-                        <Download className="h-3.5 w-3.5" /> Brochure
-                      </Button>
-                      <Button className="w-full gap-2 font-bold text-[10px] uppercase tracking-wider h-11 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/10">
-                        <FileText className="h-3.5 w-3.5" /> Quote
+                      {product.brochure ? (
+                        <Button onClick={(e) => handleViewBrochure(e, product.brochure!)} variant="outline" className="w-full gap-2 border-2 hover:bg-primary hover:text-white hover:border-primary font-bold text-[10px] uppercase tracking-wider h-11 transition-all hover:scale-[1.02] active:scale-95 shadow-sm p-0">
+                          <span className="flex items-center justify-center w-full h-full gap-2 cursor-pointer">
+                            <Eye className="h-3.5 w-3.5" /> View Brochure
+                          </span>
+                        </Button>
+                      ) : (
+                        <Button disabled variant="outline" className="w-full gap-2 border-2 font-bold text-[10px] uppercase tracking-wider h-11 shadow-sm opacity-50 cursor-not-allowed">
+                          <Download className="h-3.5 w-3.5" /> No Brochure
+                        </Button>
+                      )}
+                      <Button asChild className="w-full gap-2 font-bold text-[10px] uppercase tracking-wider h-11 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/10">
+                        <Link href="/contact">
+                          <FileText className="h-3.5 w-3.5" /> Quote
+                        </Link>
                       </Button>
                     </CardFooter>
                   </Card>

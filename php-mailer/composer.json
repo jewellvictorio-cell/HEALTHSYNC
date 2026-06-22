@@ -1,0 +1,13 @@
+{
+  "name": "healthsync/contact-form",
+  "description": "HealthSync Medical Solutions Corporation — Contact / Get-Quote Form Mailer",
+  "type": "project",
+  "require": {
+    "phpmailer/phpmailer": "^6.9"
+  },
+  "config": {
+    "platform": {
+      "php": "8.1"
+    }
+  }
+}

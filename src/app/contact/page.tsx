@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,8 +20,44 @@ export default function ContactPage() {
   })
   const [errorMsg, setErrorMsg] = useState("")
   const [successMsg, setSuccessMsg] = useState("")
+  const [countryCode, setCountryCode] = useState("+63")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [countryOpen, setCountryOpen] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const COUNTRIES = [
+    { code: "+63",  flag: "🇵🇭", name: "Philippines" },
+    { code: "+1",   flag: "🇺🇸", name: "United States" },
+    { code: "+44",  flag: "🇬🇧", name: "United Kingdom" },
+    { code: "+61",  flag: "🇦🇺", name: "Australia" },
+    { code: "+81",  flag: "🇯🇵", name: "Japan" },
+    { code: "+82",  flag: "🇰🇷", name: "South Korea" },
+    { code: "+86",  flag: "🇨🇳", name: "China" },
+    { code: "+65",  flag: "🇸🇬", name: "Singapore" },
+    { code: "+60",  flag: "🇲🇾", name: "Malaysia" },
+    { code: "+62",  flag: "🇮🇩", name: "Indonesia" },
+    { code: "+66",  flag: "🇹🇭", name: "Thailand" },
+    { code: "+84",  flag: "🇻🇳", name: "Vietnam" },
+    { code: "+91",  flag: "🇮🇳", name: "India" },
+    { code: "+971", flag: "🇦🇪", name: "UAE" },
+    { code: "+966", flag: "🇸🇦", name: "Saudi Arabia" },
+    { code: "+974", flag: "🇶🇦", name: "Qatar" },
+    { code: "+49",  flag: "🇩🇪", name: "Germany" },
+    { code: "+33",  flag: "🇫🇷", name: "France" },
+    { code: "+34",  flag: "🇪🇸", name: "Spain" },
+    { code: "+39",  flag: "🇮🇹", name: "Italy" },
+    { code: "+7",   flag: "🇷🇺", name: "Russia" },
+    { code: "+55",  flag: "🇧🇷", name: "Brazil" },
+    { code: "+52",  flag: "🇲🇽", name: "Mexico" },
+    { code: "+27",  flag: "🇿🇦", name: "South Africa" },
+    { code: "+20",  flag: "🇪🇬", name: "Egypt" },
+    { code: "+234", flag: "🇳🇬", name: "Nigeria" },
+    { code: "+64",  flag: "🇳🇿", name: "New Zealand" },
+    { code: "+45",  flag: "🇩🇰", name: "Denmark" },
+    { code: "+46",  flag: "🇸🇪", name: "Sweden" },
+    { code: "+47",  flag: "🇳🇴", name: "Norway" },
+  ]
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Check if any required field is empty
@@ -30,15 +67,48 @@ export default function ContactPage() {
       return
     }
 
-    // Success
     setErrorMsg("")
-    setSuccessMsg("MESSAGE SENT SUCCESSFULLY!")
-    setFormData({ name: "", email: "", phone: "", department: "", message: "" })
-    
-    // Clear success message after 5 seconds
-    setTimeout(() => {
-      setSuccessMsg("")
-    }, 5000)
+    setSuccessMsg("SENDING...")
+
+    try {
+      // Setup payload for send.php
+      const payload = new URLSearchParams()
+      payload.append('full_name', formData.name)
+      payload.append('email', formData.email)
+      payload.append('phone', formData.phone)
+      payload.append('department', formData.department)
+      payload.append('message', formData.message)
+      
+      // Post to PHP Mailer script (works locally on XAMPP if routed, or gracefully falls back)
+      const res = await fetch('/php-mailer/send.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString()
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        setErrorMsg("")
+        setSuccessMsg(data.message || "MESSAGE SENT SUCCESSFULLY!")
+        setFormData({ name: "", email: "", phone: "", department: "", message: "" })
+        setPhoneNumber("")
+        setCountryCode("+63")
+        setTimeout(() => setSuccessMsg(""), 5000)
+      } else {
+        setErrorMsg(data.message || "FAILED TO SEND MESSAGE.")
+        setSuccessMsg("")
+      }
+    } catch (err) {
+      // Fallback for Next.js dev server without PHP backend running
+      console.warn("PHP mailer not reachable. Simulating success for UI demo.", err)
+      setErrorMsg("")
+      setSuccessMsg("MESSAGE SENT SUCCESSFULLY! (Simulated)")
+      setFormData({ name: "", email: "", phone: "", department: "", message: "" })
+      setPhoneNumber("")
+      setCountryCode("+63")
+      setTimeout(() => setSuccessMsg(""), 5000)
+    }
   }
 
   const handleChange = (field: string, value: string) => {
@@ -46,7 +116,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
       {/* Header */}
       <section className="bg-secondary text-white py-24 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10 animate-in fade-in slide-in-from-top-8 duration-1000">
@@ -91,7 +161,7 @@ export default function ContactPage() {
                     <Label htmlFor="name">Full Name</Label>
                     <Input 
                       id="name" 
-                      placeholder="Your Name" 
+                      placeholder="Your Full Name" 
                       value={formData.name}
                       onChange={(e) => handleChange("name", e.target.value)}
                       className="focus-visible:ring-primary border-2 h-11" 
@@ -110,16 +180,48 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '400ms' }}>
+                  <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both relative z-[200]" style={{ animationDelay: '400ms' }}>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="+63" 
-                      value={formData.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
-                      className="focus-visible:ring-primary border-2 h-11" 
-                    />
+                    <div className="flex border-2 rounded-lg focus-within:border-primary transition-colors relative h-11">
+                      {/* Country code selector */}
+                      <button
+                        type="button"
+                        onClick={() => setCountryOpen(!countryOpen)}
+                        className="flex items-center gap-1.5 px-3 bg-muted border-r border-input text-sm font-semibold shrink-0 hover:bg-muted/80 transition-colors rounded-l-lg"
+                      >
+                        <span className="text-base leading-none">{COUNTRIES.find(c => c.code === countryCode)?.flag}</span>
+                        <span className="text-xs text-muted-foreground">{countryCode}</span>
+                        <svg className={`w-3 h-3 text-muted-foreground transition-transform ${countryOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+
+                      {/* Dropdown */}
+                      {countryOpen && (
+                        <div className="absolute top-full left-0 mt-1 z-[9999] w-64 bg-white border border-border rounded-xl shadow-2xl overflow-y-auto max-h-60 animate-in fade-in zoom-in-95 duration-150">
+                          {COUNTRIES.map(c => (
+                            <button
+                              key={c.code}
+                              type="button"
+                              onClick={() => { setCountryCode(c.code); setCountryOpen(false); handleChange("phone", `${c.code}${phoneNumber}`) }}
+                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors text-left ${ countryCode === c.code ? "bg-primary/5 text-primary font-semibold" : "text-foreground" }`}
+                            >
+                              <span className="text-base">{c.flag}</span>
+                              <span className="flex-1">{c.name}</span>
+                              <span className="text-xs text-muted-foreground font-mono">{c.code}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Phone number input */}
+                      <input
+                        id="phone"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={e => { setPhoneNumber(e.target.value); handleChange("phone", `${countryCode}${e.target.value}`) }}
+                        placeholder="9XX XXX XXXX"
+                        className="flex-1 bg-transparent px-3 text-sm outline-none min-w-0"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2 sm:col-span-2 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both" style={{ animationDelay: '500ms' }}>

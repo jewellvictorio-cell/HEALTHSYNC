@@ -3,10 +3,11 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, MessageSquare, ChevronDown, ArrowRight } from "lucide-react"
+import { Menu, X, MessageSquare, ChevronDown, ArrowRight, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "./Logo"
 import { Button } from "@/components/ui/button"
+import { isAdmin } from "@/lib/auth"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -112,9 +113,12 @@ const productCategories = [
 ]
 
 export function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const [mobileMenuOpen,    setMobileMenuOpen]    = React.useState(false)
   const [mobileProductsOpen, setMobileProductsOpen] = React.useState(false)
+  const [adminLoggedIn,     setAdminLoggedIn]     = React.useState(false)
   const pathname = usePathname()
+
+  React.useEffect(() => { setAdminLoggedIn(isAdmin()) }, [pathname])
 
   // Prevent body scroll when mobile menu is open
   React.useEffect(() => {
@@ -211,13 +215,26 @@ export function Navbar() {
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden lg:flex items-center ml-4">
+        <div className="hidden lg:flex items-center ml-4 gap-3">
           <Button size="sm" className="h-9 px-5 font-semibold gap-1.5 transition-all hover:scale-105 active:scale-95" asChild>
             <Link href="/contact">
               <MessageSquare className="h-4 w-4" />
               Get a Quote
             </Link>
           </Button>
+          <div className="w-px h-5 bg-border" />
+          <Link
+            href={adminLoggedIn ? "/admin" : "/admin/login"}
+            title={adminLoggedIn ? "Admin Dashboard" : "Admin Login"}
+            className={cn(
+              "flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95",
+              adminLoggedIn
+                ? "border-primary bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
+            )}
+          >
+            <User className="h-5 w-5" />
+          </Link>
         </div>
 
         {/* Mobile menu trigger */}
@@ -265,6 +282,16 @@ export function Navbar() {
         
         <div className="overflow-y-auto flex-1 px-4 py-6">
           <div className="space-y-2">
+            {/* Admin link in mobile menu */}
+            <Link
+              href={adminLoggedIn ? "/admin" : "/admin/login"}
+              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors min-h-[44px]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <User className="h-4 w-4" />
+              {adminLoggedIn ? "Admin Dashboard" : "Admin Login"}
+            </Link>
+            <div className="h-px bg-border my-1" />
             {navigation.map((item) => {
               if (item.name === "Products") {
                 return (
