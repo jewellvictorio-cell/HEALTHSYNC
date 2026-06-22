@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="h-screen overflow-hidden bg-muted/30 flex">
       {/* Mobile overlay */}
       {sideOpen && (
         <div
@@ -65,11 +65,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       )}
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar ── always fixed, never scrolls with content ── */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-secondary flex flex-col transition-transform duration-300 shadow-2xl",
-        "lg:translate-x-0 lg:static lg:z-auto",
-        sideOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-50 w-64 bg-secondary flex flex-col shadow-2xl transition-transform duration-300",
+        sideOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Brand header */}
         <div className="relative flex items-center gap-3 px-5 py-5 shrink-0 overflow-hidden" style={{ background: "linear-gradient(135deg, hsl(240,67%,14%) 0%, hsl(240,67%,10%) 100%)" }}>
@@ -143,8 +142,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* ── Main Content ── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* ── Main Content ── offset by sidebar width on desktop ── */}
+      <div className="flex flex-col min-w-0 w-full lg:pl-64 h-screen overflow-hidden">
 
         {/* Top bar */}
         <header className="flex items-center gap-4 px-4 lg:px-8 py-4 bg-card border-b border-border sticky top-0 z-30 shadow-sm">
@@ -172,7 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {children}
         </main>
       </div>
