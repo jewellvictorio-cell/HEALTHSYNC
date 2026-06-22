@@ -1,59 +1,39 @@
-import Image from "next/image"
+"use client"
+
+import * as React from "react"
+import { getClients, type HospitalClient } from "@/lib/store"
+import { useClients } from "@/lib/useStore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Landmark, Building2, Globe, Heart, ShieldCheck, Users } from "lucide-react"
-
-const stats = [
-  { title: "Government Hospitals", icon: Landmark, count: "6" },
-  { title: "PRIVATE HOSPITALS", icon: Building2, count: "7" }
-]
-
-const govHospitals = [
-  "Antipolo City Hospital System",
-  "President Ramon Magsaysay Memorial Hospital",
-  "Quirino Memorial Medical Center",
-  "Amang Rodriguez Memorial Hospital",
-  "San Marcelino District Hospital",
-  "Doctor Florentino C. Doble Memorial Hospital"
-]
-
-const privateHospitals = [
-  "Binangonan Lakeview Hospital",
-  "Lorma Medical Center",
-  "Pag-asa Hospital",
-  "San Isidro Hospital",
-  "San Lorenzo Hospital Health Management Co., Inc.",
-  "Bermudez Polymedic Hospital",
-  "Catanduanes Doctors Hospital"
-]
+import Image from "next/image"
 
 const characteristics = [
-  {
-    title: "Trusted Partner",
-    desc: "Building lasting relationships through quality and service.",
-    icon: ShieldCheck
-  },
-  {
-    title: "Wide Network",
-    desc: "Serving a diverse range of healthcare institutions.",
-    icon: Globe
-  },
-  {
-    title: "Committed to Excellence",
-    desc: "Supporting better healthcare through reliable solutions.",
-    icon: Heart
-  }
+  { title: "Trusted Partner",        desc: "Building lasting relationships through quality and service.", icon: ShieldCheck },
+  { title: "Wide Network",           desc: "Serving a diverse range of healthcare institutions.",         icon: Globe },
+  { title: "Committed to Excellence",desc: "Supporting better healthcare through reliable solutions.",    icon: Heart },
 ]
 
 const keyPartners = [
-  { name: "STERITEX MEDICAL SYSTEM", seed: "p1" },
-  { name: "MEDTEX BIOMEDICAL SERVICES", seed: "p2" },
-  { name: "TOPFORM MEDICAL ENTERPRISES", seed: "p3" },
-  { name: "VICTORIA’S PHARMACEUTICAL PRODUCT DISTRIBUTION", seed: "p4" },
-  { name: "3G MEDICAL ENTERPRISES", seed: "p5" },
-  { name: "BIOMEDICAL SERVICES", seed: "p6" }
+  { name: "STERITEX MEDICAL SYSTEM",                         seed: "p1" },
+  { name: "MEDTEX BIOMEDICAL SERVICES",                      seed: "p2" },
+  { name: "TOPFORM MEDICAL ENTERPRISES",                     seed: "p3" },
+  { name: "VICTORIA'S PHARMACEUTICAL PRODUCT DISTRIBUTION",  seed: "p4" },
+  { name: "3G MEDICAL ENTERPRISES",                          seed: "p5" },
+  { name: "BIOMEDICAL SERVICES",                             seed: "p6" },
 ]
 
 export default function ClientsPage() {
+  const clients = useClients()
+
+
+  const govHospitals  = clients.filter(c => c.type === "government")
+  const privHospitals = clients.filter(c => c.type === "private")
+
+  const stats = [
+    { title: "Government Hospitals", icon: Landmark,  count: govHospitals.length.toString() },
+    { title: "Private Hospitals",    icon: Building2, count: privHospitals.length.toString() },
+  ]
+
   return (
     <div className="flex flex-col overflow-hidden">
       <section className="bg-secondary text-white py-24 text-center relative">
@@ -81,28 +61,31 @@ export default function ClientsPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Government */}
             <div className="space-y-6 animate-in slide-in-from-left-8 duration-1000 fill-mode-both">
               <h3 className="text-2xl font-headline font-bold text-secondary flex items-center gap-2">
                 <Landmark className="text-primary h-6 w-6" /> Government Institutions
               </h3>
               <ul className="space-y-4">
                 {govHospitals.map((h, i) => (
-                  <li key={i} className="flex items-start gap-3 p-4 bg-muted/20 rounded-xl border border-border/50 transition-all hover:bg-white hover:shadow-md hover:translate-x-2 animate-in fade-in slide-in-from-left-4 duration-500 fill-mode-both" style={{ animationDelay: `${i * 100}ms` }}>
+                  <li key={h.id} className="flex items-start gap-3 p-4 bg-muted/20 rounded-xl border border-border/50 transition-all hover:bg-white hover:shadow-md hover:translate-x-2 animate-in fade-in slide-in-from-left-4 duration-500 fill-mode-both" style={{ animationDelay: `${i * 100}ms` }}>
                     <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
-                    <span className="text-secondary font-medium">{h}</span>
+                    <span className="text-secondary font-medium">{h.name}</span>
                   </li>
                 ))}
               </ul>
             </div>
+
+            {/* Private */}
             <div className="space-y-6 animate-in slide-in-from-right-8 duration-1000 fill-mode-both">
               <h3 className="text-2xl font-headline font-bold text-secondary flex items-center gap-2">
                 <Building2 className="text-primary h-6 w-6" /> Private Hospitals
               </h3>
               <ul className="space-y-4">
-                {privateHospitals.map((h, i) => (
-                  <li key={i} className="flex items-start gap-3 p-4 bg-muted/20 rounded-xl border border-border/50 transition-all hover:bg-white hover:shadow-md hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: `${i * 100}ms` }}>
+                {privHospitals.map((h, i) => (
+                  <li key={h.id} className="flex items-start gap-3 p-4 bg-muted/20 rounded-xl border border-border/50 transition-all hover:bg-white hover:shadow-md hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: `${i * 100}ms` }}>
                     <div className="h-2 w-2 rounded-full bg-accent mt-2 shrink-0" />
-                    <span className="text-secondary font-medium">{h}</span>
+                    <span className="text-secondary font-medium">{h.name}</span>
                   </li>
                 ))}
               </ul>
@@ -139,13 +122,7 @@ export default function ClientsPage() {
             {keyPartners.map((partner, i) => (
               <Card key={i} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 border-none group overflow-hidden animate-in zoom-in-95 duration-700 fill-mode-both" style={{ animationDelay: `${i * 150}ms` }}>
                 <div className="relative w-full h-48 mb-6 rounded-xl overflow-hidden">
-                  <Image 
-                    src={`https://picsum.photos/seed/${partner.seed}/600/400`} 
-                    alt={partner.name} 
-                    fill 
-                    className="object-cover group-hover:scale-110 transition-transform duration-700" 
-                    data-ai-hint="medical partner"
-                  />
+                  <Image src={`https://picsum.photos/seed/${partner.seed}/600/400`} alt={partner.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" data-ai-hint="medical partner" />
                   <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                     <h4 className="text-white font-bold text-sm leading-tight uppercase tracking-wider">{partner.name}</h4>

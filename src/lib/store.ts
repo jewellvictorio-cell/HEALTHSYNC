@@ -8,8 +8,6 @@ export interface TeamMember {
   name: string
   role: string
   photo: string // URL or base64
-  email?: string
-  password?: string
 }
 
 export interface Product {
@@ -40,12 +38,12 @@ export interface HospitalClient {
 // ─── Seed data (original hardcoded values) ───────────────────────────────────
 
 const SEED_TEAM: TeamMember[] = [
-  { id: "t1", name: "Renz Marlon Buban",   role: "President",               photo: `https://picsum.photos/seed/RenzMarlonBuban/400/400`, email: "renz.marlon@healthsync.com", password: "Password123!" },
-  { id: "t2", name: "Riena Mae Buban",     role: "Corporate Secretary",     photo: `https://picsum.photos/seed/RienaMaeBuban/400/400`, email: "riena.mae@healthsync.com", password: "Password123!" },
-  { id: "t3", name: "John Michael Siochi", role: "Chief Finance Officer",   photo: `https://picsum.photos/seed/JohnMichaelSiochi/400/400`, email: "john.michael@healthsync.com", password: "Password123!" },
-  { id: "t4", name: "Jobelle Velasquez",   role: "Finance Analyst",         photo: `https://picsum.photos/seed/JobelleVelasquez/400/400`, email: "jobelle.velasquez@healthsync.com", password: "Password123!" },
-  { id: "t5", name: "Donmark Capispisan",  role: "Technical Coordinator",   photo: `https://picsum.photos/seed/DonmarkCapispisan/400/400`, email: "donmark.capispisan@healthsync.com", password: "Password123!" },
-  { id: "t6", name: "Marwinn Vicente",     role: "Sales Coordinator",       photo: `https://picsum.photos/seed/MarwinnVicente/400/400`, email: "marwinn.vicente@healthsync.com", password: "Password123!" },
+  { id: "t1", name: "Renz Marlon Buban",   role: "President",               photo: `https://picsum.photos/seed/RenzMarlonBuban/400/400` },
+  { id: "t2", name: "Riena Mae Buban",     role: "Corporate Secretary",     photo: `https://picsum.photos/seed/RienaMaeBuban/400/400` },
+  { id: "t3", name: "John Michael Siochi", role: "Chief Finance Officer",   photo: `https://picsum.photos/seed/JohnMichaelSiochi/400/400` },
+  { id: "t4", name: "Jobelle Velasquez",   role: "Finance Analyst",         photo: `https://picsum.photos/seed/JobelleVelasquez/400/400` },
+  { id: "t5", name: "Donmark Capispisan",  role: "Technical Coordinator",   photo: `https://picsum.photos/seed/DonmarkCapispisan/400/400` },
+  { id: "t6", name: "Marwinn Vicente",     role: "Sales Coordinator",       photo: `https://picsum.photos/seed/MarwinnVicente/400/400` },
 ]
 
 const SEED_PRODUCTS: Product[] = [
@@ -114,6 +112,8 @@ function saveList<T>(key: string, data: T[]): boolean {
   if (!isBrowser()) return false
   try {
     localStorage.setItem(key, JSON.stringify(data))
+    // Notify all same-tab listeners (useStore hooks) to re-render immediately
+    window.dispatchEvent(new Event("hs_store_updated"))
     return true
   } catch (e: any) {
     console.error("Storage Error:", e)

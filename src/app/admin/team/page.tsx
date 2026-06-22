@@ -4,6 +4,7 @@ import * as React from "react"
 import Image from "next/image"
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
 import { Plus, Pencil, Trash2, X, Check, User, Upload, Eye } from "lucide-react"
+import { AdminImageCropper } from "@/components/admin/AdminImageCropper"
 
 const EMPTY: Omit<TeamMember, "id"> = { name: "", role: "", photo: "", email: "", password: "" }
 
@@ -51,6 +52,7 @@ export default function AdminTeamPage() {
   const [showForm, setShowForm] = React.useState(false)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [imgError, setImgError] = React.useState(false)
+  const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null)
 
   function reload() { setMembers(getTeam()) }
   React.useEffect(reload, [])
@@ -72,24 +74,17 @@ export default function AdminTeamPage() {
     if (!file) return
     const reader = new FileReader()
     reader.onload = (event) => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement("canvas")
-        let { width, height } = img
-        const max = 400
-        if (width > height && width > max) { height *= max / width; width = max }
-        else if (height > max) { width *= max / height; height = max }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext("2d")
-        ctx?.drawImage(img, 0, 0, width, height)
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8)
-        setForm(prev => ({ ...prev, photo: dataUrl }))
-        setImgError(false)
+      if (event.target?.result) {
+        setCropImageSrc(event.target.result as string)
       }
-      img.src = event.target?.result as string
     }
     reader.readAsDataURL(file)
+  }
+
+  function handleSaveCrop(croppedBase64: string) {
+    setForm(prev => ({ ...prev, photo: croppedBase64 }))
+    setImgError(false)
+    setCropImageSrc(null)
   }
 
   return (
@@ -184,8 +179,6 @@ export default function AdminTeamPage() {
             )}
             <div><FieldLabel required>Full Name</FieldLabel><AdminInput value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Juan Dela Cruz" /></div>
             <div><FieldLabel required>Job Position</FieldLabel><AdminInput value={form.role} onChange={v => setForm(f => ({ ...f, role: v }))} placeholder="e.g. Chief Executive Officer" /></div>
-            <div><FieldLabel>Email Address</FieldLabel><AdminInput value={form.email || ""} onChange={v => setForm(f => ({ ...f, email: v }))} placeholder="e.g. user@healthsync.com" /></div>
-            <div><FieldLabel>Password</FieldLabel><AdminInput value={form.password || ""} onChange={v => setForm(f => ({ ...f, password: v }))} placeholder="Leave blank if no login access" /></div>
             <div>
               <FieldLabel>Profile Photo</FieldLabel>
               <div className="relative mt-1.5">

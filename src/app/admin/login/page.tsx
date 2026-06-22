@@ -121,7 +121,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError("") }}
-                placeholder="admin@healthsync.com"
+                placeholder="Your Email Address"
                 autoComplete="email"
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all font-body"
                 style={{
@@ -153,7 +153,7 @@ export default function AdminLoginPage() {
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={e => { setPassword(e.target.value); setError("") }}
-                  placeholder="••••••••••"
+                  placeholder="Your Password"
                   autoComplete="current-password"
                   className="w-full rounded-xl px-4 py-3 pr-12 text-sm outline-none transition-all font-body"
                   style={{

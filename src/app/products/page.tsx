@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye } from "lucide-react"
+import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { getProducts, type Product } from "@/lib/store"
+import { useProducts } from "@/lib/useStore"
 
 const categories = [
   "All", 
@@ -33,13 +34,9 @@ const packagingBenefits = [
 function ProductsContent() {
   const searchParams = useSearchParams()
   
-  const [allProducts,    setAllProducts]    = React.useState<Product[]>([])
+  const allProducts = useProducts()
   const [activeCategory, setActiveCategory] = React.useState(searchParams.get("category") || "All")
   const [searchTerm,     setSearchTerm]     = React.useState(searchParams.get("search") || "")
-
-  React.useEffect(() => {
-    setAllProducts(getProducts())
-  }, [])
 
   React.useEffect(() => {
     setActiveCategory(searchParams.get("category") || "All")
@@ -148,14 +145,20 @@ function ProductsContent() {
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredProducts.map((product, i) => (
                   <Card key={product.id} className="group hover:shadow-2xl transition-all duration-500 border-none shadow-sm overflow-hidden flex flex-col bg-white animate-in zoom-in-95 duration-500 fill-mode-both" style={{ animationDelay: `${(i % 9) * 100}ms` }}>
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image 
-                        src={product.image} 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        data-ai-hint="medical device"
-                      />
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                      {product.image ? (
+                        <Image 
+                          src={product.image} 
+                          alt={product.name} 
+                          fill 
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full group-hover:scale-110 transition-transform duration-700">
+                          <Package className="h-20 w-20 text-muted-foreground/20" />
+                        </div>
+                      )}
                       <Badge className="absolute top-4 left-4 bg-white/95 text-primary hover:bg-white backdrop-blur-md border-none shadow-md font-bold text-[10px] uppercase transition-transform group-hover:scale-105">
                         {product.category}
                       </Badge>

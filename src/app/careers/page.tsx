@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { getJobs, type Job } from "@/lib/store"
+import { useJobs } from "@/lib/useStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -73,14 +74,14 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
 }
 
 export default function CareersPage() {
-  const [jobs,        setJobs]        = React.useState<Job[]>([])
-  const [selectedJob, setSelectedJob] = React.useState<Job | null>(null)
-  const [successMsg, setSuccessMsg] = React.useState("")
-  const [errorMsg, setErrorMsg] = React.useState("")
-  const [formData, setFormData] = React.useState({ name: "", email: "", phone: "", position: "", message: "" })
-  const [countryCode, setCountryCode] = React.useState("+63")
-  const [phoneNumber, setPhoneNumber] = React.useState("")
-  const [countryOpen, setCountryOpen] = React.useState(false)
+  const jobs = useJobs()
+  const [selectedJob,  setSelectedJob]  = React.useState<Job | null>(null)
+  const [successMsg,   setSuccessMsg]   = React.useState("")
+  const [errorMsg,     setErrorMsg]     = React.useState("")
+  const [formData,     setFormData]     = React.useState({ name: "", email: "", phone: "", position: "", message: "" })
+  const [countryCode,  setCountryCode]  = React.useState("+63")
+  const [phoneNumber,  setPhoneNumber]  = React.useState("")
+  const [countryOpen,  setCountryOpen]  = React.useState(false)
 
   const COUNTRIES = [
     { code: "+63",  flag: "🇵🇭", name: "Philippines" },
@@ -115,7 +116,7 @@ export default function CareersPage() {
     { code: "+47",  flag: "🇳🇴", name: "Norway" },
   ]
 
-  React.useEffect(() => { setJobs(getJobs()) }, [])
+
 
   function handleApplySubmit(e: React.FormEvent) {
     e.preventDefault()
