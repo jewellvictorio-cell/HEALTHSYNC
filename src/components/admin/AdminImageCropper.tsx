@@ -1,119 +1,205 @@
+// src/components/admin/AdminImageCropper.tsx
+// Image cropping component for admin team photo uploads
+// This is a client‑side component – it uses React‑Image‑Crop which works only in the browser.
+// We use the "use client" directive so Next.js treats it as a client component and avoids Turbopack SSR errors.
+
 "use client"
 
 import * as React from "react"
-import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop'
-import 'react-image-crop/dist/ReactCrop.css'
+import { useCallback, useRef, useState } from "react"
+import dynamic from "next/dynamic"
+import type { Crop, PixelCrop } from "react-image-crop"
+// Lazy load ReactCrop client‑side to avoid SSR import errors
+const ReactCrop = dynamic(() => import('react-image-crop').then(mod => mod.default), { ssr: false })
+
+import "react-image-crop/dist/ReactCrop.css"
 import { X, Crop as CropIcon } from "lucide-react"
 
+// Helper: create a cropped image Blob from the source image and the pixel crop area.
+function getCroppedImg(
+  image: HTMLImageElement,
+  pixelCrop: PixelCrop
+): Promise<Blob> {
+  const canvas = document.createElement("canvas")
+  canvas.width = pixelCrop.width
+  canvas.height = pixelCrop.height
+  const ctx = canvas.getContext("2d")
+
+  if (!ctx) {
+    return Promise.reject(new Error("2D context not available"))
+  }
+
+  // Draw the cropped portion of the image onto the canvas
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  )
+
+  // Convert canvas to Blob (default JPEG, quality 0.9)
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob)
+      else reject(new Error("Canvas is empty"))
+    }, "image/jpeg", 0.9)
+  })
+}
+
 interface AdminImageCropperProps {
-  imageSrc: string
-  onSave: (croppedBase64: string) => void
+  /** Image data URL or object URL to be cropped */
+  src: string
+  /** Called with the final cropped Blob */
+  onComplete: (croppedBlob: Blob) => void
+  /** Called when the user cancels the operation */
   onCancel: () => void
 }
 
-function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight,
-    ),
-    mediaWidth,
-    mediaHeight,
+/**
+ * A modal‑style image cropper used in the admin team page.
+ * It presents the selected image, lets the user draw a crop rectangle, and returns
+ * a Blob of the cropped result.
+ */
+export default function AdminImageCropper({ src, onComplete, onCancel }: AdminImageCropperProps) {
+  const imgRef = useRef<HTMLImageElement | null>(null)
+  const [crop, setCrop] = useState<Crop>(
+    // Start with a centered square crop (1:1) – you can adjust the aspect ratio if needed.
+    { unit: "%", width: 80, aspect: 1 }
   )
-}
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null)
 
-export function AdminImageCropper({ imageSrc, onSave, onCancel }: AdminImageCropperProps) {
-  const imgRef = React.useRef<HTMLImageElement>(null)
-  const [crop, setCrop] = React.useState<Crop>()
-  const [completedCrop, setCompletedCrop] = React.useState<PixelCrop>()
+  const [mounted, setMounted] = React.useState(false)
+  const [scale, setScale] = useState(1)
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
 
-  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const { width, height } = e.currentTarget
-    setCrop(centerAspectCrop(width, height, 1))
-  }
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  async function handleSave() {
-    if (completedCrop && imgRef.current) {
-      const canvas = document.createElement('canvas')
-      const scaleX = imgRef.current.naturalWidth / imgRef.current.width
-      const scaleY = imgRef.current.naturalHeight / imgRef.current.height
-      canvas.width = completedCrop.width
-      canvas.height = completedCrop.height
-      const ctx = canvas.getContext('2d')
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    // Simple centered square crop (80% width, 1:1 aspect)
+    const initialCrop: Crop = { unit: "%", width: 80, aspect: 1 }
+    setCrop(initialCrop)
+    imgRef.current = e.currentTarget
+  }, [])
 
-      if (ctx) {
-        ctx.imageSmoothingQuality = 'high'
-        ctx.drawImage(
-          imgRef.current,
-          completedCrop.x * scaleX,
-          completedCrop.y * scaleY,
-          completedCrop.width * scaleX,
-          completedCrop.height * scaleY,
-          0,
-          0,
-          completedCrop.width,
-          completedCrop.height
-        )
-        const base64Image = canvas.toDataURL('image/jpeg', 0.9)
-        onSave(base64Image)
-      }
-    } else {
-      // If no crop happens, just return original
-      onSave(imageSrc)
+  const handleSave = async () => {
+    if (!completedCrop || !imgRef.current) return
+    try {
+      const blob = await getCroppedImg(imgRef.current, completedCrop)
+      onComplete(blob)
+    } catch (err) {
+      console.error("Crop failed:", err)
     }
   }
 
+  // Generate a preview URL whenever the completed crop changes
+  React.useEffect(() => {
+    if (!completedCrop || !imgRef.current) {
+      setPreviewUrl(null)
+      return
+    }
+    const canvas = document.createElement("canvas")
+    canvas.width = completedCrop.width
+    canvas.height = completedCrop.height
+    const ctx = canvas.getContext("2d")
+    if (!ctx) {
+      setPreviewUrl(null)
+      return
+    }
+    ctx.drawImage(
+      imgRef.current,
+      completedCrop.x,
+      completedCrop.y,
+      completedCrop.width,
+      completedCrop.height,
+      0,
+      0,
+      completedCrop.width,
+      completedCrop.height
+    )
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob)
+        setPreviewUrl(url)
+      } else {
+        setPreviewUrl(null)
+      }
+    }, "image/jpeg", 0.9)
+  }, [completedCrop])
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-secondary/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30 shrink-0">
-          <div className="flex items-center gap-2">
-            <CropIcon className="h-5 w-5 text-primary" />
-            <h2 className="font-headline font-bold text-secondary text-lg">Crop Profile Photo</h2>
-          </div>
-          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted">
-            <X className="h-4 w-4" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+      <div className="relative bg-white rounded-lg shadow-xl p-4 max-w-2xl w-full max-h-[90vh] overflow-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Crop Photo</h2>
+          <button onClick={onCancel} className="p-1 hover:bg-gray-100 rounded">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 flex flex-col items-center bg-black/5">
-          <p className="text-sm text-muted-foreground mb-4 text-center">Drag the box to crop the image to a 1:1 square ratio.</p>
-          <div className="max-w-full max-h-[60vh] overflow-hidden rounded-xl border border-border bg-white/50 shadow-inner p-2">
+        {/* Cropping area */}
+        {mounted && (
+          <>
             <ReactCrop
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
-              onComplete={(c) => setCompletedCrop(c)}
+              onComplete={(_, pixelCrop) => setCompletedCrop(pixelCrop)}
+              keepSelection={true}
               aspect={1}
-              circularCrop={true}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                ref={imgRef}
-                alt="Crop me"
-                src={imageSrc}
+                src={src}
+                alt="To be cropped"
                 onLoad={onImageLoad}
-                className="max-h-[50vh] w-auto object-contain"
+                ref={imgRef}
+                className="max-w-full max-h-[60vh] object-contain"
+                style={{ transform: `scale(${scale})` }}
               />
             </ReactCrop>
-          </div>
-        </div>
+            {/* Zoom slider */}
+            <div className="mt-4 flex items-center space-x-3">
+              <label className="text-sm font-medium">Zoom:</label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.01}
+                value={scale}
+                onChange={e => setScale(parseFloat(e.target.value))}
+                className="flex-1"
+              />
+            </div>
+            {/* Real‑time preview */}
+            {previewUrl && (
+              <div className="mt-4">
+                <p className="text-sm font-medium mb-1">Preview:</p>
+                <img src={previewUrl} alt="Cropped preview" className="max-w-full h-auto rounded border" />
+              </div>
+            )}
+          </>
+        )}
 
-        <div className="px-6 py-4 border-t border-border bg-muted/30 flex justify-end gap-3 shrink-0">
+        {/* Action buttons */}
+        <div className="flex justify-end space-x-2 mt-4">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+            className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-6 py-2 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
+            disabled={!completedCrop}
+            className="px-4 py-2 rounded bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
           >
+            <CropIcon className="inline mr-1" size={16} />
             Save Crop
           </button>
         </div>

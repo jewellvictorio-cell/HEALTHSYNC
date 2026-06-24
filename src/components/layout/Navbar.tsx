@@ -121,16 +121,17 @@ export function Navbar() {
   React.useEffect(() => { setAdminLoggedIn(isAdmin()) }, [pathname])
 
   // Prevent body scroll when mobile menu is open
+  // Lock body scroll when mobile menu is open
   React.useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [mobileMenuOpen])
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -250,19 +251,18 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu overlay */}
-      <div 
-        className={cn(
-          "fixed inset-0 z-50 lg:hidden transition-all duration-300",
-          mobileMenuOpen ? "visible bg-black/50" : "invisible bg-black/0"
-        )}
-        onClick={() => setMobileMenuOpen(false)}
-      />
+          {/* Mobile menu overlay */}
+          {mobileMenuOpen && (
+            <div
+              className="fixed inset-0 z-40 lg:hidden bg-black/50 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
 
       {/* Mobile menu panel */}
       <div className={cn(
-        "fixed inset-y-0 right-0 z-50 w-full max-w-sm lg:hidden transition-transform duration-300 ease-in-out bg-background shadow-2xl flex flex-col",
-        mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        "fixed inset-y-0 left-0 z-50 w-full max-w-sm lg:hidden transform transition-transform duration-300 ease-in-out bg-background shadow-2xl flex flex-col overflow-y-auto h-screen max-h-screen",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-between h-16 px-4 border-b shrink-0">
           <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>

@@ -4,7 +4,7 @@ import * as React from "react"
 import Image from "next/image"
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
 import { Plus, Pencil, Trash2, X, Check, User, Upload, Eye } from "lucide-react"
-import { AdminImageCropper } from "@/components/admin/AdminImageCropper"
+import AdminImageCropper from "@/components/admin/AdminImageCropper"
 
 const EMPTY: Omit<TeamMember, "id"> = { name: "", role: "", photo: "", email: "", password: "" }
 
@@ -81,10 +81,16 @@ export default function AdminTeamPage() {
     reader.readAsDataURL(file)
   }
 
-  function handleSaveCrop(croppedBase64: string) {
-    setForm(prev => ({ ...prev, photo: croppedBase64 }))
-    setImgError(false)
-    setCropImageSrc(null)
+  async function handleSaveCrop(croppedBlob: Blob) {
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(croppedBlob);
+    });
+    setForm(prev => ({ ...prev, photo: base64 }));
+    setImgError(false);
+    setCropImageSrc(null);
   }
 
   return (
@@ -203,6 +209,15 @@ export default function AdminTeamPage() {
             </button>
           </div>
         </AdminModal>
+      )}
+
+      {/* Crop Modal */}
+      {cropImageSrc && (
+        <AdminImageCropper
+          src={cropImageSrc}
+          onComplete={handleSaveCrop}
+          onCancel={() => setCropImageSrc(null)}
+        />
       )}
 
       {/* Delete Confirm */}
