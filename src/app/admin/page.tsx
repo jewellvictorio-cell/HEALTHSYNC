@@ -9,14 +9,20 @@ export default function AdminDashboard() {
   const [stats, setStats] = React.useState({ team: 0, products: 0, jobs: 0, gov: 0, priv: 0 })
 
   React.useEffect(() => {
-    const clients = getClients()
-    setStats({
-      team:     getTeam().length,
-      products: getProducts().length,
-      jobs:     getJobs().length,
-      gov:      clients.filter(c => c.type === "government").length,
-      priv:     clients.filter(c => c.type === "private").length,
-    })
+    let mounted = true
+    Promise.all([getTeam(), getProducts(), getJobs(), getClients()]).then(
+      ([teamData, productsData, jobsData, clientsData]) => {
+        if (!mounted) return
+        setStats({
+          team: teamData.length,
+          products: productsData.length,
+          jobs: jobsData.length,
+          gov: clientsData.filter((c: any) => c.type === "government").length,
+          priv: clientsData.filter((c: any) => c.type === "private").length,
+        })
+      }
+    )
+    return () => { mounted = false }
   }, [])
 
   const cards = [

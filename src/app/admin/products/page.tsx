@@ -4,6 +4,8 @@ import * as React from "react"
 import Image from "next/image"
 import { getProducts, addProduct, updateProduct, deleteProduct, PRODUCT_CATEGORIES, type Product } from "@/lib/store"
 import { Plus, Pencil, Trash2, X, Check, Package, Search, Filter, Upload, FileText } from "lucide-react"
+import AdminImageCropper from "@/components/admin/AdminImageCropper"
+import { supabase } from "@/lib/supabase"
 
 const EMPTY: Omit<Product, "id"> = { name: "", description: "", image: "", category: PRODUCT_CATEGORIES[0], brochure: "" }
 
@@ -32,8 +34,9 @@ export default function AdminProductsPage() {
   const [search,    setSearch]    = React.useState("")
   const [catFilter, setCatFilter] = React.useState("All")
   const [imgError,  setImgError]  = React.useState(false)
+  const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null)
 
-  function reload() { setProducts(getProducts()) }
+  function reload() { getProducts().then(setProducts) }
   React.useEffect(reload, [])
 
   const displayed = products.filter(p => {
@@ -44,39 +47,77 @@ export default function AdminProductsPage() {
 
   function openAdd()            { setEditing(null); setForm(EMPTY); setImgError(false); setShowForm(true) }
   function openEdit(p: Product) { setEditing(p); setForm({ name: p.name, description: p.description, image: p.image, category: p.category, brochure: p.brochure || "" }); setImgError(false); setShowForm(true) }
-  function handleSave() {
+  async function handleSave() {
     if (!form.name.trim()) return
-    const success = editing ? updateProduct({ ...editing, ...form }) : addProduct(form)
-    if (success !== false) {
+    const success = editing ? await updateProduct({ ...editing, ...form }) : await addProduct(form)
+    if (success) {
       setShowForm(false)
       reload()
     }
   }
-  function handleDelete(id: string) { deleteProduct(id); setDeleteId(null); reload() }
+  async function handleDelete(id: string) { await deleteProduct(id); setDeleteId(null); reload() }
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (event) => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement("canvas")
-        let { width, height } = img
-        const max = 800
-        if (width > height && width > max) { height *= max / width; width = max }
-        else if (height > max) { width *= max / height; height = max }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext("2d")
-        ctx?.drawImage(img, 0, 0, width, height)
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8) // Compress to 80% JPEG
-        setForm(prev => ({ ...prev, image: dataUrl }))
-        setImgError(false)
+      if (event.target?.result) {
+        setCropImageSrc(event.target.result as string)
       }
-      img.src = event.target?.result as string
     }
     reader.readAsDataURL(file)
+  }
+
+  async function handleSaveCrop(croppedBlob: Blob) {
+    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET;
+    if (!bucket) {
+      console.error('Supabase storage bucket not configured');
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+      setForm(prev => ({ ...prev, image: base64 }));
+      setImgError(false);
+      setCropImageSrc(null);
+      return;
+    }
+
+    try {
+      const fileName = `products/${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage.from(bucket).upload(fileName, croppedBlob, {
+        contentType: 'image/jpeg',
+      });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(croppedBlob);
+        });
+        setForm(prev => ({ ...prev, image: base64 }));
+      } else {
+        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+        console.log('Supabase upload successful! Public URL:', urlData.publicUrl);
+        setForm(prev => ({ ...prev, image: urlData.publicUrl }));
+      }
+    } catch (e) {
+      console.error('Unexpected error during image upload:', e);
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+      setForm(prev => ({ ...prev, image: base64 }));
+    }
+
+    setImgError(false);
+    setCropImageSrc(null);
   }
 
   function handleBrochureUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -170,9 +211,19 @@ export default function AdminProductsPage() {
       {showForm && (
         <AdminModal title={editing ? "Edit Product" : "Add Product"} onClose={() => setShowForm(false)}>
           <div className="px-6 py-5 space-y-4">
-            {form.image && !imgError && (
-              <div className="relative h-36 rounded-xl overflow-hidden border border-border">
-                <Image src={form.image} alt="Preview" fill className="object-cover" unoptimized onError={() => setImgError(true)} />
+            {form.image && (
+              <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl border border-border">
+                <div className="relative h-20 w-24 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-background flex items-center justify-center">
+                  {!imgError ? (
+                    <Image src={form.image} alt="Preview" fill className="object-cover" unoptimized onError={() => { console.error('Image failed to load:', form.image); setImgError(true); }} />
+                  ) : (
+                    <div className="text-[10px] text-destructive text-center p-1 font-semibold leading-tight">Image Load Error</div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground/70">Photo Preview</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{imgError ? "Check if Supabase bucket is public." : "Upload a new photo to replace this."}</p>
+                </div>
               </div>
             )}
             <div>
@@ -244,6 +295,16 @@ export default function AdminProductsPage() {
             </button>
           </div>
         </AdminModal>
+      )}
+
+      {/* Crop Modal */}
+      {cropImageSrc && (
+        <AdminImageCropper
+          src={cropImageSrc}
+          onComplete={handleSaveCrop}
+          onCancel={() => setCropImageSrc(null)}
+          aspectRatio={4/3} // Products are typically not square, but you can change this.
+        />
       )}
 
       {/* Delete Confirm */}

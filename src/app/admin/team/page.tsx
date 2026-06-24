@@ -5,6 +5,7 @@ import Image from "next/image"
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
 import { Plus, Pencil, Trash2, X, Check, User, Upload, Eye } from "lucide-react"
 import AdminImageCropper from "@/components/admin/AdminImageCropper"
+import { supabase } from "@/lib/supabase"
 
 const EMPTY: Omit<TeamMember, "id"> = { name: "", role: "", photo: "", email: "", password: "" }
 
@@ -54,20 +55,20 @@ export default function AdminTeamPage() {
   const [imgError, setImgError] = React.useState(false)
   const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null)
 
-  function reload() { setMembers(getTeam()) }
+  function reload() { getTeam().then(setMembers) }
   React.useEffect(reload, [])
 
   function openAdd()          { setEditing(null); setForm(EMPTY); setImgError(false); setShowForm(true) }
   function openEdit(m: TeamMember) { setEditing(m); setForm({ name: m.name, role: m.role, photo: m.photo, email: m.email || "", password: m.password || "" }); setImgError(false); setShowForm(true) }
-  function handleSave() {
+  async function handleSave() {
     if (!form.name.trim() || !form.role.trim()) return
-    const success = editing ? updateTeamMember({ ...editing, ...form }) : addTeamMember(form)
-    if (success !== false) {
+    const success = editing ? await updateTeamMember({ ...editing, ...form }) : await addTeamMember(form)
+    if (success) {
       setShowForm(false)
       reload()
     }
   }
-  function handleDelete(id: string) { deleteTeamMember(id); setDeleteId(null); reload() }
+  async function handleDelete(id: string) { await deleteTeamMember(id); setDeleteId(null); reload() }
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -82,13 +83,56 @@ export default function AdminTeamPage() {
   }
 
   async function handleSaveCrop(croppedBlob: Blob) {
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(croppedBlob);
-    });
-    setForm(prev => ({ ...prev, photo: base64 }));
+    // Ensure bucket env variable is set
+    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET;
+    if (!bucket) {
+      console.error('Supabase storage bucket not configured');
+      // Fallback: use base64 preview without uploading
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+      setForm(prev => ({ ...prev, photo: base64 }));
+      setImgError(false);
+      setCropImageSrc(null);
+      return;
+    }
+
+    try {
+      const fileName = `team/${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage.from(bucket).upload(fileName, croppedBlob, {
+        contentType: 'image/jpeg',
+      });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        // Fallback to base64
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(croppedBlob);
+        });
+        setForm(prev => ({ ...prev, photo: base64 }));
+      } else {
+        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+        console.log('Supabase upload successful! Public URL:', urlData.publicUrl);
+        setForm(prev => ({ ...prev, photo: urlData.publicUrl }));
+      }
+    } catch (e) {
+      console.error('Unexpected error during image upload:', e);
+      // Fallback to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(croppedBlob);
+      });
+      setForm(prev => ({ ...prev, photo: base64 }));
+    }
+
     setImgError(false);
     setCropImageSrc(null);
   }
@@ -172,14 +216,18 @@ export default function AdminTeamPage() {
       {showForm && (
         <AdminModal title={editing ? "Edit Member" : "Add Team Member"} onClose={() => setShowForm(false)}>
           <div className="px-6 py-5 space-y-4">
-            {form.photo && !imgError && (
+            {form.photo && (
               <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl border border-border">
-                <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-border shrink-0">
-                  <Image src={form.photo} alt="Preview" fill className="object-cover" unoptimized onError={() => setImgError(true)} />
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-background flex items-center justify-center">
+                  {!imgError ? (
+                    <Image src={form.photo} alt="Preview" fill className="object-cover" unoptimized onError={() => { console.error('Image failed to load:', form.photo); setImgError(true); }} />
+                  ) : (
+                    <div className="text-xs text-destructive text-center p-1 font-semibold leading-tight">Image Load Error</div>
+                  )}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground/70">Photo Preview</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Upload a new photo to replace this.</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{imgError ? "Check if Supabase bucket is public." : "Upload a new photo to replace this."}</p>
                 </div>
               </div>
             )}

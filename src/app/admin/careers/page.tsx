@@ -54,7 +54,7 @@ export default function AdminCareersPage() {
   const [showForm, setShowForm] = React.useState(false)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
 
-  function reload() { setJobs(getJobs()) }
+  function reload() { getJobs().then(setJobs) }
   React.useEffect(reload, [])
 
   function openAdd() { setEditing(null); setForm({ ...EMPTY, postedDate: today }); setShowForm(true) }
@@ -63,12 +63,12 @@ export default function AdminCareersPage() {
     setForm({ title: j.title, location: j.location, type: j.type, postedDate: j.postedDate, shortDescription: j.shortDescription, longDescription: j.longDescription })
     setShowForm(true)
   }
-  function handleSave() {
+  async function handleSave() {
     if (!form.title.trim() || !form.shortDescription.trim()) return
-    editing ? updateJob({ ...editing, ...form }) : addJob(form)
+    editing ? await updateJob({ ...editing, ...form }) : await addJob(form)
     setShowForm(false); reload()
   }
-  function handleDelete(id: string) { deleteJob(id); setDeleteId(null); reload() }
+  async function handleDelete(id: string) { await deleteJob(id); setDeleteId(null); reload() }
 
   function formatDate(d: string) {
     try { return new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" }) } catch { return d }

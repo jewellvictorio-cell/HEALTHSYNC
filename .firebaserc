@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "healthsync-ad24b",
+    "healthsync": "healthsync-ad24b"
+  },
+  "targets": {},
+  "etags": {}
+}

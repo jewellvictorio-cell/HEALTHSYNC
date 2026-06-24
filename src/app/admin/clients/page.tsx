@@ -34,7 +34,7 @@ export default function AdminClientsPage() {
   const [deleteId,  setDeleteId]  = React.useState<string | null>(null)
   const [adding,    setAdding]    = React.useState(false)
 
-  function reload() { setClients(getClients()) }
+  function reload() { getClients().then(setClients) }
   React.useEffect(reload, [])
 
   const govClients  = clients.filter(c => c.type === "government")
@@ -42,17 +42,17 @@ export default function AdminClientsPage() {
   const displayed   = activeTab === "government" ? govClients : privClients
 
   function startEdit(c: HospitalClient) { setEditId(c.id); setEditName(c.name) }
-  function saveEdit() {
+  async function saveEdit() {
     if (!editName.trim() || !editId) return
-    updateClient({ id: editId, name: editName.trim(), type: clients.find(c => c.id === editId)!.type })
+    await updateClient({ id: editId, name: editName.trim(), type: clients.find(c => c.id === editId)!.type })
     setEditId(null); reload()
   }
-  function handleAdd() {
+  async function handleAdd() {
     if (!newName.trim()) return
-    addClient({ name: newName.trim(), type: activeTab })
+    await addClient({ name: newName.trim(), type: activeTab })
     setNewName(""); setAdding(false); reload()
   }
-  function handleDelete(id: string) { deleteClient(id); setDeleteId(null); reload() }
+  async function handleDelete(id: string) { await deleteClient(id); setDeleteId(null); reload() }
 
   const tabs: { key: Tab; label: string; icon: typeof Landmark; count: number }[] = [
     { key: "government", label: "Government Hospitals", icon: Landmark,  count: govClients.length },

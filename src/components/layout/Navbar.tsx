@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import { Logo } from "./Logo"
 import { Button } from "@/components/ui/button"
 import { isAdmin } from "@/lib/auth"
+import { useProducts } from "@/lib/useStore"
+import { PRODUCT_CATEGORIES } from "@/lib/store"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -18,105 +20,25 @@ const navigation = [
   { name: "Clients", href: "/clients" },
 ]
 
-const productCategories = [
-  {
-    title: "MEDICAL EQUIPMENT",
-    links: [
-      { name: "Anesthesia Machine", href: "/products?category=Medical+Equipment&search=Anesthesia+Machine" },
-      { name: "Anesthesia Vaporizer", href: "/products?category=Medical+Equipment&search=Anesthesia+Vaporizer" },
-      { name: "Aspirator", href: "/products?category=Medical+Equipment&search=Aspirator" },
-      { name: "Autoclave Machine", href: "/products?category=Medical+Equipment&search=Autoclave+Machine" },
-      { name: "CPAP/BiPAP", href: "/products?category=Medical+Equipment&search=CPAP" },
-      { name: "Defibrillator", href: "/products?category=Medical+Equipment&search=Defibrillator" },
-      { name: "ECG Machine", href: "/products?category=Medical+Equipment&search=ECG+Machine" },
-      { name: "Electrosurgical Unit", href: "/products?category=Medical+Equipment&search=Electrosurgical+Unit" },
-      { name: "Fetal Monitor", href: "/products?category=Medical+Equipment&search=Fetal+Monitor" },
-      { name: "Infusion Device", href: "/products?category=Medical+Equipment&search=Infusion+Device" },
-      { name: "Nebulizer", href: "/products?category=Medical+Equipment&search=Nebulizer" },
-      { name: "Oxygen Concentrator", href: "/products?category=Medical+Equipment&search=Oxygen+Concentrator" },
-      { name: "Patient Monitor", href: "/products?category=Medical+Equipment&search=Patient+Monitor" },
-      { name: "Patient Scale", href: "/products?category=Medical+Equipment&search=Patient+Scale" },
-      { name: "Pulse Oximeter", href: "/products?category=Medical+Equipment&search=Pulse+Oximeter" },
-      { name: "Radiant Warmer", href: "/products?category=Medical+Equipment&search=Radiant+Warmer" },
-      { name: "Ventilator Machine", href: "/products?category=Medical+Equipment&search=Ventilator+Machine" },
-    ]
-  },
-  {
-    title: "LABORATORY EQUIPMENT",
-    links: [
-      { name: "Centrifuge", href: "/products?category=Laboratory+Equipment&search=Centrifuge" },
-      { name: "Freezer", href: "/products?category=Laboratory+Equipment&search=Freezer" },
-      { name: "Incubator", href: "/products?category=Laboratory+Equipment&search=Incubator" },
-      { name: "Lab Oven", href: "/products?category=Laboratory+Equipment&search=Lab+Oven" },
-      { name: "Lab Refrigerator", href: "/products?category=Laboratory+Equipment&search=Lab+Refrigerator" },
-      { name: "Microscope", href: "/products?category=Laboratory+Equipment&search=Microscope" },
-      { name: "Pipette", href: "/products?category=Laboratory+Equipment&search=Pipette" },
-      { name: "pH Meter", href: "/products?category=Laboratory+Equipment&search=pH+Meter" },
-      { name: "Thermohygrometer", href: "/products?category=Laboratory+Equipment&search=Thermohygrometer" },
-      { name: "Water Bath", href: "/products?category=Laboratory+Equipment&search=Water+Bath" },
-    ]
-  },
-  {
-    title: "CONSUMABLES | MEDICAL SUPPLIES",
-    links: [
-      { name: "Anesthesia Breathing Circuit", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Anesthesia+Breathing+Circuit" },
-      { name: "Bacterial Filter", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Bacterial+Filter" },
-      { name: "BP Cuff, Dual Tube (Disposable)", href: "/products?category=Consumables+%7C+Medical+Supplies&search=BP+Cuff,+Dual+Tube+(Disposable)" },
-      { name: "BP Cuff, Single Tube (Disposable)", href: "/products?category=Consumables+%7C+Medical+Supplies&search=BP+Cuff,+Single+Tube+(Disposable)" },
-      { name: "Bubble Humidifier", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Bubble+Humidifier" },
-      { name: "Closed Suction Catheter", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Closed+Suction+Catheter" },
-      { name: "EtCO₂ Water Trap", href: "/products?category=Consumables+%7C+Medical+Supplies&search=EtCO" },
-      { name: "FHME", href: "/products?category=Consumables+%7C+Medical+Supplies&search=FHME" },
-      { name: "Flex Tube", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Flex+Tube" },
-      { name: "Full Face Mask (CPAP, BiPAP)", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Full+Face+Mask" },
-      { name: "Gas Sampling Line", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Gas+Sampling+Line" },
-      { name: "High Flow Consumables", href: "/products?category=Consumables+%7C+Medical+Supplies&search=High+Flow+Consumables" },
-      { name: "Humidification Chamber", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Humidification+Chamber" },
-      { name: "Incentive Spirometer", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Incentive+Spirometer" },
-      { name: "Nasal Cannula", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Nasal+Cannula" },
-      { name: "NIV Face Mask", href: "/products?category=Consumables+%7C+Medical+Supplies&search=NIV+Face+Mask" },
-      { name: "Peak Flowmeter", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Peak+Flowmeter" },
-      { name: "Ventilator Breathing Circuit, Dual Limb", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Dual+Limb" },
-      { name: "Ventilator Breathing Circuit, Single Limb", href: "/products?category=Consumables+%7C+Medical+Supplies&search=Single+Limb" },
-    ]
-  },
-  {
-    title: "ACCESSORIES | MEDICAL SUPPLIES",
-    links: [
-      { name: "BP Bulb", href: "/products?category=Accessories+%7C+Medical+Supplies&search=BP+Bulb" },
-      { name: "BP Cuff, Dual Tube (Reusable)", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Reusable" },
-      { name: "BP Cuff, Dual Tube (Disposable)", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Disposable" },
-      { name: "ECG Leads (3, 5, 12 Leads)", href: "/products?category=Accessories+%7C+Medical+Supplies&search=ECG+Leads" },
-      { name: "Flow Sensor, Ventilator", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Flow+Sensor" },
-      { name: "High-Pressure Regulator, Compressed Air", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Compressed+Air" },
-      { name: "High-Pressure Regulator, Oxygen", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Regulator,+Oxygen" },
-      { name: "NIBP Hose, Coiled", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Coiled" },
-      { name: "NIBP Hose, Dual Tube", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Hose,+Dual" },
-      { name: "NIBP Hose, Single Tube", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Hose,+Single" },
-      { name: "Oxygen Flowmeter, 15 LPM", href: "/products?category=Accessories+%7C+Medical+Supplies&search=15+LPM" },
-      { name: "Oxygen Flowmeter, 70 LPM", href: "/products?category=Accessories+%7C+Medical+Supplies&search=70+LPM" },
-      { name: "Oxygen/Air Blender", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Blender" },
-      { name: "SpO₂ Sensor", href: "/products?category=Accessories+%7C+Medical+Supplies&search=SpO₂+Sensor" },
-      { name: "SpO₂ Trunk Cable", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Trunk+Cable" },
-      { name: "Temperature Probe", href: "/products?category=Accessories+%7C+Medical+Supplies&search=Temperature+Probe" },
-    ]
-  },
-  {
-    title: "PACKAGING SOLUTIONS",
-    links: [
-      { name: "Standard Packaging", href: "/products?category=Packaging+Solutions&search=Standard" },
-      { name: "Foam Protection Packaging", href: "/products?category=Packaging+Solutions&search=Foam" },
-      { name: "Wooden Crate Packaging", href: "/products?category=Packaging+Solutions&search=Wooden" },
-      { name: "Export Grade Packaging", href: "/products?category=Packaging+Solutions&search=Export" },
-    ]
-  }
-]
+
 
 export function Navbar() {
   const [mobileMenuOpen,    setMobileMenuOpen]    = React.useState(false)
   const [mobileProductsOpen, setMobileProductsOpen] = React.useState(false)
   const [adminLoggedIn,     setAdminLoggedIn]     = React.useState(false)
   const pathname = usePathname()
+  const allProducts = useProducts()
+
+  const productCategories = React.useMemo(() => {
+    return PRODUCT_CATEGORIES.map(category => ({
+      title: category.toUpperCase(),
+      categoryParam: category,
+      links: allProducts
+        .filter(p => p.category === category)
+        .slice(0, 15) // Limit to 15 per category so it doesn't break layout
+        .map(p => ({ name: p.name, href: `/products?category=${encodeURIComponent(category)}&search=${encodeURIComponent(p.name)}` }))
+    }))
+  }, [allProducts])
 
   React.useEffect(() => { setAdminLoggedIn(isAdmin()) }, [pathname])
 
@@ -176,9 +98,9 @@ export function Navbar() {
                       <div className="grid grid-cols-5 gap-6 max-h-[60vh] overflow-y-auto pr-2 pb-2">
                         {productCategories.map((category) => (
                           <div key={category.title} className="space-y-4">
-                            <h3 className="text-sm font-headline font-bold tracking-tight text-secondary">
-                              {category.title}
-                            </h3>
+                              <Link href={`/products?category=${encodeURIComponent(category.categoryParam)}`} className="text-sm font-headline font-bold tracking-tight text-secondary hover:text-primary transition-colors">
+                                {category.title}
+                              </Link>
                             <ul className="space-y-0.5">
                               {category.links.map((link) => (
                                 <li key={link.name}>
@@ -320,7 +242,9 @@ export function Navbar() {
                         <div className="px-4 py-4 space-y-6 bg-muted/30 rounded-lg border border-border/50">
                           {productCategories.map((category) => (
                             <div key={category.title} className="space-y-3">
-                              <h4 className="text-sm font-headline font-bold text-secondary">{category.title}</h4>
+                              <Link href={`/products?category=${encodeURIComponent(category.categoryParam)}`} className="text-sm font-headline font-bold text-secondary hover:text-primary transition-colors block" onClick={() => setMobileMenuOpen(false)}>
+                                {category.title}
+                              </Link>
                               <div className="flex flex-col space-y-1">
                                 {category.links.map(link => (
                                   <Link
