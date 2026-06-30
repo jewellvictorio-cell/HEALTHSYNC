@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { getProducts, addProduct, updateProduct, deleteProduct, PRODUCT_CATEGORIES, type Product } from "@/lib/store"
-import { Plus, Pencil, Trash2, X, Check, Package, Search, Filter, Upload, FileText } from "lucide-react"
-import AdminImageCropper from "@/components/admin/AdminImageCropper"
-import { supabase } from "@/lib/supabase"
+import { getProducts, addProduct, updateProduct, deleteProduct, saveProducts, PRODUCT_CATEGORIES, type Product } from "@/lib/store"
+import { Plus, Pencil, Trash2, X, Check, Package, Search, Filter, FileText, Loader2 } from "lucide-react"
+import { useToast } from "@/components/admin/AdminToast"
+import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
 
 const EMPTY: Omit<Product, "id"> = { name: "", description: "", image: "", category: PRODUCT_CATEGORIES[0], brochure: "" }
 
@@ -34,9 +34,17 @@ export default function AdminProductsPage() {
   const [search,    setSearch]    = React.useState("")
   const [catFilter, setCatFilter] = React.useState("All")
   const [imgError,  setImgError]  = React.useState(false)
-  const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null)
+  const [saving,    setSaving]    = React.useState(false)
+  const [cropSrc,   setCropSrc]   = React.useState<string | null>(null)
+  
+  // Selection states
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = React.useState(false)
+  const [deletingBulk, setDeletingBulk] = React.useState(false)
 
-  function reload() { getProducts().then(setProducts) }
+  const { toast } = useToast()
+
+  function reload() { setProducts(getProducts()) }
   React.useEffect(reload, [])
 
   const displayed = products.filter(p => {
@@ -45,79 +53,59 @@ export default function AdminProductsPage() {
     return matchCat && matchQ
   })
 
+  // Clear selections when filters change to avoid accidental edits
+  React.useEffect(() => {
+    setSelectedIds([])
+  }, [search, catFilter])
+
+  const allSelected = displayed.length > 0 && displayed.every(p => selectedIds.includes(p.id))
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      // Unselect only the currently filtered/displayed products
+      const displayedIds = displayed.map(p => p.id)
+      setSelectedIds(prev => prev.filter(id => !displayedIds.includes(id)))
+    } else {
+      // Select all currently filtered/displayed products
+      const displayedIds = displayed.map(p => p.id)
+      setSelectedIds(prev => Array.from(new Set([...prev, ...displayedIds])))
+    }
+  }
+
   function openAdd()            { setEditing(null); setForm(EMPTY); setImgError(false); setShowForm(true) }
   function openEdit(p: Product) { setEditing(p); setForm({ name: p.name, description: p.description, image: p.image, category: p.category, brochure: p.brochure || "" }); setImgError(false); setShowForm(true) }
+  
   async function handleSave() {
     if (!form.name.trim()) return
-    const success = editing ? await updateProduct({ ...editing, ...form }) : await addProduct(form)
-    if (success) {
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 600))
+    const success = editing ? updateProduct({ ...editing, ...form }) : addProduct(form)
+    setSaving(false)
+    if (success !== false) {
       setShowForm(false)
       reload()
+      toast(editing ? "Product successfully updated!" : "Product successfully added!")
     }
   }
-  async function handleDelete(id: string) { await deleteProduct(id); setDeleteId(null); reload() }
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setCropImageSrc(event.target.result as string)
-      }
-    }
-    reader.readAsDataURL(file)
+  function handleDelete(id: string) {
+    deleteProduct(id)
+    setSelectedIds(prev => prev.filter(x => x !== id))
+    setDeleteId(null)
+    reload()
+    toast("Product removed.")
   }
 
-  async function handleSaveCrop(croppedBlob: Blob) {
-    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET;
-    if (!bucket) {
-      console.error('Supabase storage bucket not configured');
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(croppedBlob);
-      });
-      setForm(prev => ({ ...prev, image: base64 }));
-      setImgError(false);
-      setCropImageSrc(null);
-      return;
-    }
-
-    try {
-      const fileName = `products/${Date.now()}.jpg`;
-      const { data, error } = await supabase.storage.from(bucket).upload(fileName, croppedBlob, {
-        contentType: 'image/jpeg',
-      });
-
-      if (error) {
-        console.error('Supabase upload error:', error);
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(croppedBlob);
-        });
-        setForm(prev => ({ ...prev, image: base64 }));
-      } else {
-        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-        console.log('Supabase upload successful! Public URL:', urlData.publicUrl);
-        setForm(prev => ({ ...prev, image: urlData.publicUrl }));
-      }
-    } catch (e) {
-      console.error('Unexpected error during image upload:', e);
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(croppedBlob);
-      });
-      setForm(prev => ({ ...prev, image: base64 }));
-    }
-
-    setImgError(false);
-    setCropImageSrc(null);
+  async function handleBulkDelete() {
+    setDeletingBulk(true)
+    await new Promise(r => setTimeout(r, 800))
+    const remaining = products.filter(p => !selectedIds.includes(p.id))
+    saveProducts(remaining)
+    setSelectedIds([])
+    setDeletingBulk(false)
+    setBulkDeleteConfirm(false)
+    reload()
+    toast("Selected products removed.")
   }
 
   function handleBrochureUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -167,6 +155,39 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {/* Selection / Bulk Actions Toolbar */}
+      <div className="flex items-center justify-between gap-4 bg-muted/50 border border-border p-4 rounded-xl animate-in fade-in duration-200">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="select-all-products"
+            checked={displayed.length > 0 && allSelected}
+            onChange={toggleSelectAll}
+            className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
+          />
+          <label htmlFor="select-all-products" className="text-xs font-semibold text-secondary select-none cursor-pointer">
+            Select All Displayed ({displayed.length})
+          </label>
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-xs text-primary hover:underline font-bold ml-2"
+            >
+              Unselect All ({selectedIds.length})
+            </button>
+          )}
+        </div>
+        {selectedIds.length > 0 && (
+          <button
+            onClick={() => setBulkDeleteConfirm(true)}
+            className="flex items-center gap-1.5 bg-destructive hover:bg-destructive/95 text-white px-4 py-2 rounded-lg font-semibold text-xs transition-all hover:scale-[1.02] shadow-md shadow-destructive/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Remove Selected ({selectedIds.length})
+          </button>
+        )}
+      </div>
+
       <p className="text-xs text-muted-foreground">{displayed.length} of {products.length} products</p>
 
       {/* Product Grid */}
@@ -174,6 +195,22 @@ export default function AdminProductsPage() {
         {displayed.map((p, i) => (
           <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-md transition-all duration-300 group animate-in fade-in zoom-in-95 fill-mode-both" style={{ animationDelay: `${i * 40}ms` }}>
             <div className="relative h-36 bg-muted">
+              {/* Card Checkbox Overlay */}
+              <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur p-1.5 rounded-lg border border-border flex items-center justify-center shadow">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(p.id)}
+                  onChange={() => {
+                    setSelectedIds(prev =>
+                      prev.includes(p.id)
+                        ? prev.filter(id => id !== p.id)
+                        : [...prev, p.id]
+                    )
+                  }}
+                  className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
+                />
+              </div>
+
               {p.image ? (
                 <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
               ) : (
@@ -211,19 +248,9 @@ export default function AdminProductsPage() {
       {showForm && (
         <AdminModal title={editing ? "Edit Product" : "Add Product"} onClose={() => setShowForm(false)}>
           <div className="px-6 py-5 space-y-4">
-            {form.image && (
-              <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl border border-border">
-                <div className="relative h-20 w-24 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-background flex items-center justify-center">
-                  {!imgError ? (
-                    <Image src={form.image} alt="Preview" fill className="object-cover" unoptimized onError={() => { console.error('Image failed to load:', form.image); setImgError(true); }} />
-                  ) : (
-                    <div className="text-[10px] text-destructive text-center p-1 font-semibold leading-tight">Image Load Error</div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground/70">Photo Preview</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{imgError ? "Check if Supabase bucket is public." : "Upload a new photo to replace this."}</p>
-                </div>
+            {form.image && !imgError && (
+              <div className="relative h-36 rounded-xl overflow-hidden border border-border">
+                <Image src={form.image} alt="Preview" fill className="object-cover" unoptimized onError={() => setImgError(true)} />
               </div>
             )}
             <div>
@@ -238,18 +265,11 @@ export default function AdminProductsPage() {
 
             <div>
               <label className="block text-sm font-semibold text-foreground/80 mb-1.5">Product Photo</label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className="flex items-center justify-center gap-2 w-full bg-muted border border-input border-dashed rounded-xl px-4 py-3 text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-primary/50 transition-colors font-body relative overflow-hidden">
-                  <Upload className="h-4 w-4" />
-                  <span className="text-sm font-semibold">{form.image ? "Change Photo" : "Upload Photo"}</span>
-                </div>
-              </div>
+              <ImageUploadButton
+                hasImage={!!form.image}
+                onFileSelected={setCropSrc}
+              />
+              <p className="text-xs text-muted-foreground/60 mt-1.5">A square crop dialog will appear after selecting a file.</p>
             </div>
 
             <div>
@@ -290,21 +310,12 @@ export default function AdminProductsPage() {
           </div>
           <div className="flex gap-3 px-6 pb-6">
             <button onClick={() => setShowForm(false)} className="flex-1 bg-muted hover:bg-muted/80 text-foreground font-semibold py-2.5 rounded-xl transition-all text-sm border border-border">Cancel</button>
-            <button onClick={handleSave} disabled={!form.name.trim()} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
-              <Check className="h-4 w-4" /> {editing ? "Save Changes" : "Add Product"}
+            <button onClick={handleSave} disabled={!form.name.trim() || saving} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {saving ? "Saving…" : (editing ? "Save Changes" : "Add Product")}
             </button>
           </div>
         </AdminModal>
-      )}
-
-      {/* Crop Modal */}
-      {cropImageSrc && (
-        <AdminImageCropper
-          src={cropImageSrc}
-          onComplete={handleSaveCrop}
-          onCancel={() => setCropImageSrc(null)}
-          aspectRatio={4/3} // Products are typically not square, but you can change this.
-        />
       )}
 
       {/* Delete Confirm */}
@@ -321,6 +332,35 @@ export default function AdminProductsPage() {
             <button onClick={() => handleDelete(deleteId)} className="flex-1 bg-destructive hover:bg-destructive/90 text-white font-semibold py-2.5 rounded-xl text-sm transition-all">Remove</button>
           </div>
         </AdminModal>
+      )}
+
+      {/* Bulk Delete Confirm */}
+      {bulkDeleteConfirm && (
+        <AdminModal title="Remove Selected Products?" onClose={() => setBulkDeleteConfirm(false)}>
+          <div className="px-6 py-5 text-center">
+            <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Trash2 className="h-6 w-6 text-destructive" />
+            </div>
+            <p className="text-secondary font-bold text-base mb-1">Remove {selectedIds.length} Products?</p>
+            <p className="text-muted-foreground text-sm">This will permanently remove the selected products from the catalog.</p>
+          </div>
+          <div className="flex gap-3 px-6 pb-6">
+            <button onClick={() => setBulkDeleteConfirm(false)} disabled={deletingBulk} className="flex-1 bg-muted hover:bg-muted/80 text-foreground font-semibold py-2.5 rounded-xl transition-all text-sm border border-border disabled:opacity-40">Cancel</button>
+            <button onClick={handleBulkDelete} disabled={deletingBulk} className="flex-1 bg-destructive hover:bg-destructive/95 text-white font-semibold py-2.5 rounded-xl text-sm transition-all disabled:opacity-40 flex items-center justify-center gap-1.5">
+              {deletingBulk && <Loader2 className="h-4 w-4 animate-spin" />}
+              {deletingBulk ? "Removing..." : "Remove Products"}
+            </button>
+          </div>
+        </AdminModal>
+      )}
+
+      {cropSrc && (
+        <AdminImageCropper
+          imageSrc={cropSrc}
+          title="Crop Product Image"
+          onSave={(b64) => { setForm(f => ({ ...f, image: b64 })); setImgError(false); setCropSrc(null) }}
+          onCancel={() => setCropSrc(null)}
+        />
       )}
     </div>
   )

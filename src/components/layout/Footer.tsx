@@ -1,9 +1,13 @@
+"use client"
+
 import Link from "next/link"
 import { Facebook, Mail, MapPin, Phone } from "lucide-react"
 import { Logo } from "./Logo"
+import { useFooterSettings } from "@/lib/useStore"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const settings = useFooterSettings()
 
   return (
     <footer className="bg-secondary text-secondary-foreground">
@@ -71,16 +75,16 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary shrink-0" />
                 <span className="text-sm text-secondary-foreground/70 leading-relaxed">
-                  Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines
+                  {settings.address}
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-primary shrink-0" />
-                <span className="text-sm text-secondary-foreground/70">+63 915 392 5794</span>
+                <span className="text-sm text-secondary-foreground/70">{settings.phone}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary shrink-0" />
-                <span className="text-sm text-secondary-foreground/70 break-all">healthsync.med@gmail.com</span>
+                <span className="text-sm text-secondary-foreground/70 break-all">{settings.email}</span>
               </li>
             </ul>
           </div>
@@ -91,10 +95,11 @@ export function Footer() {
             &copy; {currentYear} Healthsync Medical Solutions Corporation. All rights reserved.
           </p>
           <p className="text-[10px] text-secondary-foreground/30">
-            Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines
+            {settings.address}
           </p>
         </div>
       </div>
     </footer>
   )
 }
+

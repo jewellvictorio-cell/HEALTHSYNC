@@ -6,18 +6,21 @@ import Link from "next/link"
 import { isAdmin, logout } from "@/lib/auth"
 import {
   Users, Package, Briefcase, Building2,
-  LayoutDashboard, LogOut, Menu, X, ShieldCheck, ChevronRight
+  LayoutDashboard, LogOut, Menu, X, ShieldCheck, ChevronRight, Settings, Home
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/layout/Logo"
 import { Shield } from "lucide-react"
+import { AdminToastProvider } from "@/components/admin/AdminToast"
 
 const sidebarLinks = [
-  { href: "/admin",          label: "Dashboard",  icon: LayoutDashboard },
-  { href: "/admin/team",     label: "Team",        icon: Users },
-  { href: "/admin/products", label: "Products",    icon: Package },
-  { href: "/admin/careers",  label: "Careers",     icon: Briefcase },
-  { href: "/admin/clients",  label: "Clients",     icon: Building2 },
+  { href: "/admin",          label: "Dashboard",       icon: LayoutDashboard },
+  { href: "/admin/home",     label: "Home",            icon: Home },
+  { href: "/admin/team",     label: "About Us",        icon: Users },
+  { href: "/admin/products", label: "Products",        icon: Package },
+  { href: "/admin/careers",  label: "Careers",         icon: Briefcase },
+  { href: "/admin/clients",  label: "Clients",         icon: Building2 },
+  { href: "/admin/footer",   label: "Footer Settings", icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -56,6 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
+    <AdminToastProvider>
     <div className="h-screen overflow-hidden bg-muted/30 flex">
       {/* Mobile overlay */}
       {sideOpen && (
@@ -67,12 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* ── Sidebar ── always fixed, never scrolls with content ── */}
       <aside className={cn(
-          "fixed inset-y-0 left-0 z-50 h-full bg-secondary flex flex-col p-4 shadow-2xl transition-transform duration-300 overflow-y-auto",
-          "w-[80vw] max-w-[90vw] md:w-64",
-          sideOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        )}>
+        "fixed inset-y-0 left-0 z-50 w-64 bg-secondary flex flex-col shadow-2xl transition-transform duration-300",
+        sideOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
         {/* Brand header */}
-        <div className="relative flex items-center justify-between gap-3 px-5 py-5 shrink-0 overflow-hidden" style={{ background: "linear-gradient(135deg, hsl(240,67%,14%) 0%, hsl(240,67%,10%) 100%)" }}>
+        <div className="relative flex items-center gap-3 px-5 py-5 shrink-0 overflow-hidden" style={{ background: "linear-gradient(135deg, hsl(240,67%,14%) 0%, hsl(240,67%,10%) 100%)" }}>
           {/* Decorative glow blob */}
           <div className="absolute -top-4 -left-4 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ background: "hsl(180,58%,27%)" }} />
           {/* Logo pill */}
@@ -177,5 +180,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </main>
       </div>
     </div>
+    </AdminToastProvider>
   )
 }

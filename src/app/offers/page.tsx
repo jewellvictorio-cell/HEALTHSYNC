@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { CheckCircle2, ShieldCheck, Wallet, RefreshCw, Key, Landmark } from "lucide-react"
-import { FinancialCalculator } from "@/components/home/FinancialCalculator"
+import { CheckCircle2, Wallet, RefreshCw, Key, Landmark } from "lucide-react"
 
 const rentToOwnBenefits = [
   "No massive initial capital required",
@@ -82,27 +81,6 @@ export default function OffersPage() {
                 <Button variant="secondary" className="w-full h-12 font-bold uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-secondary/20">Request Payment Plan</Button>
               </div>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      <FinancialCalculator />
-
-      <section className="py-24 bg-white overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-muted/30 rounded-3xl p-12 text-center space-y-8 animate-in zoom-in-95 duration-1000 fill-mode-both">
-            <div className="relative inline-block">
-              <ShieldCheck className="h-16 w-16 text-primary mx-auto animate-bounce duration-[4000ms]" />
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-            </div>
-            <h2 className="text-3xl font-headline font-bold text-secondary">Peace of Mind Guaranteed</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              All our financial programs include a comprehensive service level agreement (SLA). We ensure your equipment stays operational 24/7, so you can focus on what matters most: patient health.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Button size="lg" className="px-10 h-14 font-bold transition-all hover:scale-105 shadow-xl shadow-primary/20">Apply Now</Button>
-              <Button size="lg" variant="outline" className="px-10 h-14 font-bold transition-all hover:scale-105">Download Terms PDF</Button>
-            </div>
           </div>
         </div>
       </section>

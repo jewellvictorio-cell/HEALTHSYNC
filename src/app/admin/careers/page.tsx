@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { getJobs, addJob, updateJob, deleteJob, type Job } from "@/lib/store"
-import { Plus, Pencil, Trash2, X, Check, Briefcase, MapPin, Calendar } from "lucide-react"
+import { Plus, Pencil, Trash2, X, Check, Briefcase, MapPin, Calendar, Loader2 } from "lucide-react"
+import { useToast } from "@/components/admin/AdminToast"
 
 const today = new Date().toISOString().split("T")[0]
 
@@ -53,8 +54,10 @@ export default function AdminCareersPage() {
   const [editing,  setEditing]  = React.useState<Job | null>(null)
   const [showForm, setShowForm] = React.useState(false)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [saving,   setSaving]   = React.useState(false)
+  const { toast } = useToast()
 
-  function reload() { getJobs().then(setJobs) }
+  function reload() { setJobs(getJobs()) }
   React.useEffect(reload, [])
 
   function openAdd() { setEditing(null); setForm({ ...EMPTY, postedDate: today }); setShowForm(true) }
@@ -65,10 +68,15 @@ export default function AdminCareersPage() {
   }
   async function handleSave() {
     if (!form.title.trim() || !form.shortDescription.trim()) return
-    editing ? await updateJob({ ...editing, ...form }) : await addJob(form)
-    setShowForm(false); reload()
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 600))
+    editing ? updateJob({ ...editing, ...form }) : addJob(form)
+    setSaving(false)
+    setShowForm(false)
+    reload()
+    toast(editing ? "Job posting successfully updated!" : "Job position successfully posted!")
   }
-  async function handleDelete(id: string) { await deleteJob(id); setDeleteId(null); reload() }
+  function handleDelete(id: string) { deleteJob(id); setDeleteId(null); reload(); toast("Job posting removed.", "error") }
 
   function formatDate(d: string) {
     try { return new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" }) } catch { return d }
@@ -165,8 +173,9 @@ export default function AdminCareersPage() {
           </div>
           <div className="flex gap-3 px-6 pb-6">
             <button onClick={() => setShowForm(false)} className="flex-1 bg-muted hover:bg-muted/80 text-foreground font-semibold py-2.5 rounded-xl transition-all text-sm border border-border">Cancel</button>
-            <button onClick={handleSave} disabled={!form.title.trim() || !form.shortDescription.trim()} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
-              <Check className="h-4 w-4" /> {editing ? "Save Changes" : "Post Job"}
+            <button onClick={handleSave} disabled={!form.title.trim() || !form.shortDescription.trim() || saving} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {saving ? "Saving…" : (editing ? "Save Changes" : "Post Job")}
             </button>
           </div>
         </AdminModal>

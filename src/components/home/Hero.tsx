@@ -1,7 +1,11 @@
+"use client"
+
+import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, BadgeCheck, Truck, Phone } from "lucide-react"
+import { useSlideshow } from "@/lib/useStore"
 
 const trustBadges = [
   { icon: ShieldCheck, label: "DOH Accredited" },
@@ -10,6 +14,23 @@ const trustBadges = [
 ]
 
 export function Hero() {
+  const slideshow = useSlideshow()
+  const [index, setIndex] = React.useState(0)
+
+  const slides = slideshow.length > 0 ? slideshow : [{ id: "fallback", url: "/images/hero-medical.png" }]
+
+  React.useEffect(() => {
+    if (slides.length <= 1) return
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [slides.length, index])
+
+  function handleDotClick(idx: number) {
+    setIndex(idx)
+  }
+
   return (
     <section className="relative overflow-hidden bg-background py-14 md:py-20 lg:py-28">
       <div className="container mx-auto px-4 lg:px-8">
@@ -53,21 +74,50 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right: Image */}
-          <div className="relative lg:h-[520px] xl:h-[580px] animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 ease-out fill-mode-both">
+          {/* Right: Image / Slideshow */}
+          <div className="relative lg:h-[520px] xl:h-[580px] flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 ease-out fill-mode-both">
             <div className="relative aspect-[4/3] lg:aspect-auto h-full overflow-hidden rounded-2xl shadow-2xl transition-transform duration-700 hover:scale-[1.02]">
-              <Image
-                src="/images/hero-medical.png"
-                alt="Healthsync Medical Solutions — Professional Healthcare Supply Distribution"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-secondary/30 via-transparent to-transparent" />
+              {slides.map((slide, idx) => (
+                <div
+                  key={slide.id}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                    idx === index ? "opacity-100 z-10" : "opacity-0 z-0"
+                  }`}
+                >
+                  <Image
+                    src={slide.url}
+                    alt="Healthsync Medical Solutions — Professional Healthcare Supply Distribution"
+                    fill
+                    className="object-cover"
+                    priority={idx === 0}
+                    unoptimized
+                  />
+                </div>
+              ))}
+              <div className="absolute inset-0 bg-gradient-to-t from-secondary/30 via-transparent to-transparent z-20" />
             </div>
 
+            {/* Pagination Dots */}
+            {slides.length > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-4 z-30">
+                {slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleDotClick(idx)}
+                    className={`h-2 w-2 rounded-full transition-all duration-350 ${
+                      idx === index
+                        ? "bg-primary w-5"
+                        : "bg-secondary/30 hover:bg-secondary/50"
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Floating stat card */}
-            <div className="absolute -bottom-5 -left-5 bg-white p-5 rounded-xl shadow-xl hidden xl:block border border-border animate-in slide-in-from-bottom-12 duration-1000 delay-700 fill-mode-both">
+            <div className="absolute -bottom-5 -left-5 bg-white p-5 rounded-xl shadow-xl hidden xl:block border border-border z-30 animate-in slide-in-from-bottom-12 duration-1000 delay-700 fill-mode-both">
               <div className="flex items-center gap-4">
                 <div className="bg-primary/10 p-3 rounded-full shrink-0">
                   <ShieldCheck className="h-6 w-6 text-primary" />
@@ -80,7 +130,7 @@ export function Hero() {
             </div>
 
             {/* Floating experience card */}
-            <div className="absolute -top-5 -right-5 bg-primary p-4 rounded-xl shadow-xl hidden xl:block animate-in slide-in-from-top-12 duration-1000 delay-900 fill-mode-both">
+            <div className="absolute -top-5 -right-5 bg-primary p-4 rounded-xl shadow-xl hidden xl:block z-30 animate-in slide-in-from-top-12 duration-1000 delay-900 fill-mode-both">
               <p className="text-2xl font-headline font-extrabold text-white leading-none">15+</p>
               <p className="text-[11px] font-semibold text-white/80 uppercase tracking-wider mt-0.5">Years of Trust</p>
             </div>
@@ -94,3 +144,4 @@ export function Hero() {
     </section>
   )
 }
+

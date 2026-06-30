@@ -1,6 +1,8 @@
+"use client"
+
+import * as React from "react"
 import { Hero } from "@/components/home/Hero"
 import { TrustBar } from "@/components/home/TrustBar"
-import { FinancialCalculator } from "@/components/home/FinancialCalculator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -15,6 +17,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useSlideshow2 } from "@/lib/useStore"
 
 const services = [
   {
@@ -57,6 +60,23 @@ const overviewHighlights = [
 ]
 
 export default function Home() {
+  const slideshow = useSlideshow2()
+  const [index, setIndex] = React.useState(0)
+
+  const slides = slideshow.length > 0 ? slideshow : [{ id: "fallback", url: "/images/about-team.png" }]
+
+  React.useEffect(() => {
+    if (slides.length <= 1) return
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [slides.length, index])
+
+  function handleDotClick(idx: number) {
+    setIndex(idx)
+  }
+
   return (
     <div className="flex flex-col gap-0 overflow-hidden">
       {/* Hero */}
@@ -69,14 +89,45 @@ export default function Home() {
       <section className="py-24 bg-white overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-left-12 duration-1000 ease-out fill-mode-both">
-              <Image
-                src="/images/about-team.png"
-                alt="Healthsync Medical Solutions — Healthcare Excellence in the Philippines"
-                fill
-                className="object-cover transition-transform duration-700 hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-secondary/20 via-transparent to-transparent" />
+            <div className="flex flex-col justify-between animate-in slide-in-from-left-12 duration-1000 ease-out fill-mode-both">
+              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl">
+                {slides.map((slide, idx) => (
+                  <div
+                    key={slide.id}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                      idx === index ? "opacity-100 z-10" : "opacity-0 z-0"
+                    }`}
+                  >
+                    <Image
+                      src={slide.url}
+                      alt="Healthsync Medical Solutions — Healthcare Excellence in the Philippines"
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-secondary/20 via-transparent to-transparent z-20" />
+              </div>
+
+              {/* Pagination Dots */}
+              {slides.length > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-4 z-30">
+                  {slides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleDotClick(idx)}
+                      className={`h-2 w-2 rounded-full transition-all duration-350 ${
+                        idx === index
+                          ? "bg-primary w-5"
+                          : "bg-secondary/30 hover:bg-secondary/50"
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-6 animate-in slide-in-from-right-12 duration-1000 ease-out fill-mode-both">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
@@ -169,9 +220,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Equipment Financing Estimator */}
-      <FinancialCalculator />
 
       {/* CTA Section */}
       <section className="py-24 bg-secondary relative overflow-hidden">

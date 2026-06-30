@@ -3,9 +3,9 @@
 import * as React from "react"
 import Image from "next/image"
 import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
-import { Plus, Pencil, Trash2, X, Check, User, Upload, Eye } from "lucide-react"
-import AdminImageCropper from "@/components/admin/AdminImageCropper"
-import { supabase } from "@/lib/supabase"
+import { Plus, Pencil, Trash2, X, Check, User, Eye, Loader2 } from "lucide-react"
+import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
+import { useToast } from "@/components/admin/AdminToast"
 
 const EMPTY: Omit<TeamMember, "id"> = { name: "", role: "", photo: "", email: "", password: "" }
 
@@ -54,87 +54,36 @@ export default function AdminTeamPage() {
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [imgError, setImgError] = React.useState(false)
   const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null)
+  const [saving,    setSaving]  = React.useState(false)
+  const { toast } = useToast()
 
-  function reload() { getTeam().then(setMembers) }
+  function reload() { setMembers(getTeam()) }
   React.useEffect(reload, [])
 
   function openAdd()          { setEditing(null); setForm(EMPTY); setImgError(false); setShowForm(true) }
   function openEdit(m: TeamMember) { setEditing(m); setForm({ name: m.name, role: m.role, photo: m.photo, email: m.email || "", password: m.password || "" }); setImgError(false); setShowForm(true) }
   async function handleSave() {
     if (!form.name.trim() || !form.role.trim()) return
-    const success = editing ? await updateTeamMember({ ...editing, ...form }) : await addTeamMember(form)
-    if (success) {
+    setSaving(true)
+    await new Promise(r => setTimeout(r, 600))
+    const success = editing ? updateTeamMember({ ...editing, ...form }) : addTeamMember(form)
+    setSaving(false)
+    if (success !== false) {
       setShowForm(false)
       reload()
+      toast(editing ? "Team member successfully updated!" : "Team member successfully added!")
     }
   }
-  async function handleDelete(id: string) { await deleteTeamMember(id); setDeleteId(null); reload() }
+  function handleDelete(id: string) { deleteTeamMember(id); setDeleteId(null); reload(); toast("Team member removed.", "error") }
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setCropImageSrc(event.target.result as string)
-      }
-    }
-    reader.readAsDataURL(file)
+  function handleImageUpload(raw: string) {
+    setCropImageSrc(raw)
   }
 
-  async function handleSaveCrop(croppedBlob: Blob) {
-    // Ensure bucket env variable is set
-    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET;
-    if (!bucket) {
-      console.error('Supabase storage bucket not configured');
-      // Fallback: use base64 preview without uploading
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(croppedBlob);
-      });
-      setForm(prev => ({ ...prev, photo: base64 }));
-      setImgError(false);
-      setCropImageSrc(null);
-      return;
-    }
-
-    try {
-      const fileName = `team/${Date.now()}.jpg`;
-      const { data, error } = await supabase.storage.from(bucket).upload(fileName, croppedBlob, {
-        contentType: 'image/jpeg',
-      });
-
-      if (error) {
-        console.error('Supabase upload error:', error);
-        // Fallback to base64
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(croppedBlob);
-        });
-        setForm(prev => ({ ...prev, photo: base64 }));
-      } else {
-        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-        console.log('Supabase upload successful! Public URL:', urlData.publicUrl);
-        setForm(prev => ({ ...prev, photo: urlData.publicUrl }));
-      }
-    } catch (e) {
-      console.error('Unexpected error during image upload:', e);
-      // Fallback to base64
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(croppedBlob);
-      });
-      setForm(prev => ({ ...prev, photo: base64 }));
-    }
-
-    setImgError(false);
-    setCropImageSrc(null);
+  function handleSaveCrop(croppedBase64: string) {
+    setForm(prev => ({ ...prev, photo: croppedBase64 }))
+    setImgError(false)
+    setCropImageSrc(null)
   }
 
   return (
@@ -216,18 +165,14 @@ export default function AdminTeamPage() {
       {showForm && (
         <AdminModal title={editing ? "Edit Member" : "Add Team Member"} onClose={() => setShowForm(false)}>
           <div className="px-6 py-5 space-y-4">
-            {form.photo && (
+            {form.photo && !imgError && (
               <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl border border-border">
-                <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-border shrink-0 bg-background flex items-center justify-center">
-                  {!imgError ? (
-                    <Image src={form.photo} alt="Preview" fill className="object-cover" unoptimized onError={() => { console.error('Image failed to load:', form.photo); setImgError(true); }} />
-                  ) : (
-                    <div className="text-xs text-destructive text-center p-1 font-semibold leading-tight">Image Load Error</div>
-                  )}
+                <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-border shrink-0">
+                  <Image src={form.photo} alt="Preview" fill className="object-cover" unoptimized onError={() => setImgError(true)} />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div>
                   <p className="text-xs font-semibold text-foreground/70">Photo Preview</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{imgError ? "Check if Supabase bucket is public." : "Upload a new photo to replace this."}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Upload a new photo to replace this.</p>
                 </div>
               </div>
             )}
@@ -235,37 +180,21 @@ export default function AdminTeamPage() {
             <div><FieldLabel required>Job Position</FieldLabel><AdminInput value={form.role} onChange={v => setForm(f => ({ ...f, role: v }))} placeholder="e.g. Chief Executive Officer" /></div>
             <div>
               <FieldLabel>Profile Photo</FieldLabel>
-              <div className="relative mt-1.5">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className="flex items-center justify-center gap-2 w-full bg-muted border border-input border-dashed rounded-xl px-4 py-3 text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-primary/50 transition-colors font-body relative overflow-hidden">
-                  <Upload className="h-4 w-4" />
-                  <span className="text-sm font-semibold">{form.photo ? "Change Photo" : "Upload Photo"}</span>
-                </div>
-              </div>
-              <p className="text-muted-foreground/60 text-xs mt-2">Leave blank to show a placeholder avatar.</p>
+              <ImageUploadButton
+                hasImage={!!form.photo}
+                onFileSelected={handleImageUpload}
+              />
+              <p className="text-muted-foreground/60 text-xs mt-2">A square crop dialog will appear after selecting a file.</p>
             </div>
           </div>
           <div className="flex gap-3 px-6 pb-6">
             <button onClick={() => setShowForm(false)} className="flex-1 bg-muted hover:bg-muted/80 text-foreground font-semibold py-2.5 rounded-xl transition-all text-sm border border-border">Cancel</button>
-            <button onClick={handleSave} disabled={!form.name.trim() || !form.role.trim()} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
-              <Check className="h-4 w-4" /> {editing ? "Save Changes" : "Add Member"}
+            <button onClick={handleSave} disabled={!form.name.trim() || !form.role.trim() || saving} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm disabled:opacity-40 shadow-lg shadow-primary/20">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {saving ? "Saving…" : (editing ? "Save Changes" : "Add Member")}
             </button>
           </div>
         </AdminModal>
-      )}
-
-      {/* Crop Modal */}
-      {cropImageSrc && (
-        <AdminImageCropper
-          src={cropImageSrc}
-          onComplete={handleSaveCrop}
-          onCancel={() => setCropImageSrc(null)}
-        />
       )}
 
       {/* Delete Confirm */}
@@ -282,6 +211,16 @@ export default function AdminTeamPage() {
             <button onClick={() => handleDelete(deleteId)} className="flex-1 bg-destructive hover:bg-destructive/90 text-white font-semibold py-2.5 rounded-xl transition-all text-sm">Remove</button>
           </div>
         </AdminModal>
+      )}
+
+      {/* Image Cropper Modal */}
+      {cropImageSrc && (
+        <AdminImageCropper
+          imageSrc={cropImageSrc}
+          title="Crop Profile Photo"
+          onSave={handleSaveCrop}
+          onCancel={() => setCropImageSrc(null)}
+        />
       )}
     </div>
   )
