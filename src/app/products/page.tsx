@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package, Stethoscope, Activity, FlaskConical, Pill, Wrench } from "lucide-react"
+import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package, Stethoscope, Activity } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { PRODUCT_CATEGORIES, type Product } from "@/lib/store"
@@ -128,16 +128,10 @@ function ProductsContent() {
     setSearchTerm(searchParams.get("search") || "")
   }, [searchParams])
 
-  function handleViewBrochure(e: React.MouseEvent, brochure: string) {
+  function handleViewBrochure(e: React.MouseEvent, base64: string) {
     e.preventDefault()
     try {
-      // If it's already a URL (uploaded to Supabase), open directly
-      if (brochure.startsWith("http")) {
-        window.open(brochure, "_blank")
-        return
-      }
-      // Legacy: base64 data URI — convert to blob and open
-      const arr = brochure.split(",")
+      const arr = base64.split(",")
       const mime = arr[0].match(/:(.*?);/)?.[1] || "application/pdf"
       const bstr = atob(arr[1])
       let n = bstr.length
@@ -224,7 +218,9 @@ function ProductsContent() {
               <CardContent className="p-5 space-y-3">
                 <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Formal Quotation?</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">Contact our sales team for bulk pricing, institutional accounts, and equipment procurement services.</p>
-                <Button variant="link" className="p-0 h-auto text-primary text-xs font-bold underline decoration-2 transition-all hover:tracking-wide">Contact Sales Team</Button>
+                <Button asChild variant="link" className="p-0 h-auto text-primary text-xs font-bold underline decoration-2 transition-all hover:tracking-wide">
+                  <Link href="/contact#quote-form">Contact Sales Team</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -269,16 +265,13 @@ function ProductsContent() {
                 {["Laboratory Equipment", "Consumables | Medical Supplies", "Accessories | Medical Supplies", "Packaging Solutions"].map(cat => {
                   const catProducts = allProducts.filter(p => p.category === cat)
                   if (catProducts.length === 0) return null
-                  const iconMap: Record<string, React.ElementType> = {
-                    "Laboratory Equipment": FlaskConical,
-                    "Consumables | Medical Supplies": Pill,
-                    "Accessories | Medical Supplies": Wrench,
-                    "Packaging Solutions": Box,
-                  }
-                  const CatIcon = iconMap[cat] || Package
                   return (
                     <div key={cat}>
-                      <SectionHeader icon={CatIcon} title={cat} count={catProducts.length} />
+                      <div className="flex items-center gap-3 mb-5">
+                        <h2 className="text-lg font-headline font-bold text-secondary">{cat}</h2>
+                        <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">{catProducts.length}</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
                       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
                         {catProducts.map((p, i) => <ProductCard key={p.id} product={p} index={i} onViewBrochure={handleViewBrochure} />)}
                       </div>

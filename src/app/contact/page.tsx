@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import * as React from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Phone, Mail, MapPin, Clock, Send, AlertCircle, CheckCircle } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, Send, AlertCircle, CheckCircle, X } from "lucide-react"
+import { useFooterSettings } from "@/lib/useStore"
+import Image from "next/image"
 
-export default function ContactPage() {
+function ContactForm() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,6 +26,26 @@ export default function ContactPage() {
   const [countryCode, setCountryCode] = useState("+63")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [countryOpen, setCountryOpen] = useState(false)
+  const [qrZoomed, setQrZoomed] = useState(false)
+  const footerSettings = useFooterSettings()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const inquiry = searchParams.get("inquiry")
+    if (inquiry === "rent-to-own") {
+      setFormData(prev => ({
+        ...prev,
+        department: "sales",
+        message: "I am interested in the Rent-To-Own program. Please provide more details on terms and available equipment."
+      }))
+    } else if (inquiry === "payment-plan") {
+      setFormData(prev => ({
+        ...prev,
+        department: "sales",
+        message: "I would like to inquire about long-term payment plans for medical equipment procurement."
+      }))
+    }
+  }, [searchParams])
 
   const COUNTRIES = [
     { code: "+63",  flag: "🇵🇭", name: "Philippines" },
@@ -132,7 +155,7 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-[1.2fr,0.8fr] gap-12">
             {/* Contact Form */}
-            <Card className="shadow-xl border-none animate-in slide-in-from-left-8 duration-1000 fill-mode-both">
+            <Card id="quote-form" className="shadow-xl border-none animate-in slide-in-from-left-8 duration-1000 fill-mode-both scroll-mt-24">
               <CardHeader className="bg-primary/5 border-b p-8">
                 <CardTitle className="text-2xl font-headline text-secondary flex items-center gap-3">
                   <Send className="h-6 w-6 text-primary" /> Request a Quote
@@ -150,9 +173,10 @@ export default function ContactPage() {
                         <SelectValue placeholder="Select a department to contact..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="quotation">Quotation (Official Email)</SelectItem>
-                        <SelectItem value="sales">Sales (Products Inquiry)</SelectItem>
-                        <SelectItem value="hr">Human Resources (Careers)</SelectItem>
+                        <SelectItem value="quotation">Quotation</SelectItem>
+                        <SelectItem value="sales">Products Inquiry</SelectItem>
+                        <SelectItem value="offers">Offers</SelectItem>
+                        <SelectItem value="hr">Careers</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -260,26 +284,65 @@ export default function ContactPage() {
             {/* Contact Info & Map */}
             <div className="space-y-8 animate-in slide-in-from-right-8 duration-1000 fill-mode-both">
               <div className="grid gap-6">
-                {[
-                  { icon: MapPin, title: "Office Address", content: "Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines" },
-                  { icon: Phone, title: "Call Us", content: "+63 915 392 5794" },
-                  { icon: Mail, title: "Email Us", content: "healthsync.med@gmail.com" },
-                  { icon: Clock, title: "Business Hours", content: "Mon - Fri: 8:00 AM - 5:00 PM" }
-                ].map((item, i) => (
-                  <Card key={i} className="border-none shadow-md transition-all hover:shadow-lg hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: `${300 + (i * 100)}ms` }}>
-                    <CardContent className="p-6 flex items-start gap-4">
-                      <div className="bg-primary/10 p-3 rounded-full text-primary transition-transform hover:scale-110">
-                        <item.icon className="h-6 w-6" />
+                {/* Address */}
+                <Card className="border-none shadow-md transition-all hover:shadow-lg hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: '300ms' }}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full text-primary transition-transform hover:scale-110">
+                      <MapPin className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary mb-1">Office Address</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{footerSettings.address}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Phone(s) */}
+                <Card className="border-none shadow-md transition-all hover:shadow-lg hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: '400ms' }}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full text-primary transition-transform hover:scale-110">
+                      <Phone className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary mb-1">Call Us</h4>
+                      <div className="space-y-1">
+                        {(footerSettings.phones || []).filter(p => p?.trim()).map((p, i) => (
+                          <p key={i} className="text-sm text-muted-foreground">{p}</p>
+                        ))}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-secondary mb-1">{item.title}</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {item.content}
-                        </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Email(s) */}
+                <Card className="border-none shadow-md transition-all hover:shadow-lg hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: '500ms' }}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full text-primary transition-transform hover:scale-110">
+                      <Mail className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary mb-1">Email Us</h4>
+                      <div className="space-y-1">
+                        {(footerSettings.emails || []).filter(e => e?.trim()).map((em, i) => (
+                          <p key={i} className="text-sm text-muted-foreground break-all">{em}</p>
+                        ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Business Hours */}
+                <Card className="border-none shadow-md transition-all hover:shadow-lg hover:translate-x-2 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both" style={{ animationDelay: '600ms' }}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full text-primary transition-transform hover:scale-110">
+                      <Clock className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-secondary mb-1">Business Hours</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Mon - Fri: 8:00 AM - 5:00 PM</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Map Placeholder */}
@@ -302,15 +365,79 @@ export default function ContactPage() {
                     <h4 className="font-bold">Scan Business Profile</h4>
                     <p className="text-xs text-secondary-foreground/60">Instant access to our business profile</p>
                   </div>
-                  <div className="bg-white p-2 rounded-lg w-20 h-20 transition-transform hover:scale-110">
-                     <div className="w-full h-full bg-muted/20 rounded-md" />
-                  </div>
+                   <button
+                     onClick={() => setQrZoomed(true)}
+                     className="bg-white p-1 rounded-lg w-20 h-20 transition-transform hover:scale-110 flex items-center justify-center relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/50"
+                     aria-label="Enlarge QR Code"
+                   >
+                     <Image
+                       src="/images/qr-code.jpg"
+                       alt="Healthsync Business Profile QR Code"
+                       width={80}
+                       height={80}
+                       className="object-contain"
+                       unoptimized
+                     />
+                   </button>
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </section>
+
+      {/* QR Zoom Modal */}
+      {qrZoomed && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-250"
+          onClick={() => setQrZoomed(false)}
+        >
+          <div 
+            className="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full relative animate-in zoom-in-95 duration-250 flex flex-col items-center gap-4 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setQrZoomed(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-secondary transition-colors p-1.5 rounded-lg hover:bg-muted"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <div className="mt-4 space-y-1">
+              <h3 className="font-headline font-bold text-lg text-secondary">Scan Business Profile</h3>
+              <p className="text-xs text-muted-foreground">Scan with your phone's camera to access our profile</p>
+            </div>
+
+            <div className="bg-white p-3 rounded-2xl border-2 border-border shadow-inner w-[260px] h-[260px] flex items-center justify-center relative overflow-hidden">
+              <Image
+                src="/images/qr-code.jpg"
+                alt="Healthsync Business Profile QR Code"
+                width={240}
+                height={240}
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+            
+            <Button
+              variant="outline"
+              onClick={() => setQrZoomed(false)}
+              className="w-full mt-2 font-bold uppercase tracking-wider text-xs h-10 border-2"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+export default function ContactPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading...</div>}>
+      <ContactForm />
+    </React.Suspense>
   )
 }

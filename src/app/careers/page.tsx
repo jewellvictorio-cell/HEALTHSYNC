@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { type Job } from "@/lib/store"
+import { getJobs, type Job } from "@/lib/store"
 import { useJobs } from "@/lib/useStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -12,8 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Briefcase, MapPin, Clock, Upload, X, Calendar, ChevronRight, AlertCircle, CheckCircle2 } from "lucide-react"
 
-function formatDate(d: string) {
-  try { return new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" }) } catch { return d }
+
+function formatRelativeDate(d: string) {
+  try {
+    const diff = Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
+    if (diff === 0) return "Today"
+    if (diff === 1) return "1 day ago"
+    if (diff < 30)  return `${diff} days ago`
+    if (diff < 60)  return "1 month ago"
+    return `${Math.floor(diff / 30)} months ago`
+  } catch { return d }
 }
 
 function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
@@ -38,7 +46,7 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
               <h2 className="text-2xl font-headline font-bold text-white mb-2">{job.title}</h2>
               <div className="flex flex-wrap gap-4 text-sm text-primary-foreground/70">
                 <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{job.location}</span>
-                <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Posted {formatDate(job.postedDate)}</span>
+                <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Posted {formatRelativeDate(job.postedDate)}</span>
               </div>
             </div>
             <button
@@ -62,10 +70,13 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
         </div>
 
         {/* Modal Footer */}
-        <div className="px-8 py-5 border-t bg-muted/30 rounded-b-2xl flex-shrink-0 flex gap-3">
-          <Button variant="outline" onClick={onClose} className="px-6">Close</Button>
-          <Button className="flex-1 font-bold uppercase tracking-widest text-xs transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-            Apply for This Position
+        <div className="px-8 py-5 border-t bg-muted/30 rounded-b-2xl flex-shrink-0">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="w-full h-11 font-bold uppercase tracking-widest text-xs transition-all hover:bg-secondary hover:text-white hover:border-secondary gap-2"
+          >
+            <X className="h-4 w-4" /> Close
           </Button>
         </div>
       </div>
@@ -133,16 +144,7 @@ export default function CareersPage() {
     setTimeout(() => setSuccessMsg(""), 5000)
   }
 
-  function formatRelativeDate(d: string) {
-    try {
-      const diff = Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
-      if (diff === 0) return "Today"
-      if (diff === 1) return "1 day ago"
-      if (diff < 30)  return `${diff} days ago`
-      if (diff < 60)  return "1 month ago"
-      return `${Math.floor(diff / 30)} months ago`
-    } catch { return d }
-  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/20 overflow-hidden">

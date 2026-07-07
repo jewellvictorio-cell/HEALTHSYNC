@@ -1,18 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HealthSync Data Store (Firebase & Supabase Migration)
+//  HealthSync Data Store
+//  All data is stored in localStorage, seeded with the original hardcoded data.
 // ─────────────────────────────────────────────────────────────────────────────
-
-import { db } from "./firebase"
-import { collection, doc, setDoc, getDocs, updateDoc, deleteDoc, getDoc, writeBatch } from "firebase/firestore"
-import { uploadBase64File } from "./supabase"
 
 export interface TeamMember {
   id: string
   name: string
   role: string
-  photo: string // URL
-  email?: string
-  password?: string
+  photo: string // URL or base64
 }
 
 export interface Product {
@@ -39,17 +34,6 @@ export interface HospitalClient {
   name: string
   type: "government" | "private"
   logo?: string
-}
-
-export interface FooterSettings {
-  address: string
-  phone: string
-  email: string
-}
-
-export interface SlideshowImage {
-  id: string
-  url: string
 }
 
 // ─── Seed data (original hardcoded values) ───────────────────────────────────
@@ -97,10 +81,23 @@ const SEED_CLIENTS: HospitalClient[] = [
   { id:"p7", name:"Catanduanes Doctors Hospital",                         type:"private",    logo: "https://picsum.photos/seed/p7/300/300" },
 ]
 
+export interface FooterSettings {
+  address: string
+  phones: string[]
+  emails: string[]
+  /** @deprecated kept for migration only */ phone?: string
+  /** @deprecated kept for migration only */ email?: string
+}
+
 const SEED_FOOTER: FooterSettings = {
   address: "Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines",
-  phone: "+63 915 392 5794",
-  email: "healthsync.med@gmail.com",
+  phones: ["+63 915 392 5794"],
+  emails: ["healthsync.med@gmail.com"],
+}
+
+export interface SlideshowImage {
+  id: string
+  url: string
 }
 
 const SEED_SLIDESHOW: SlideshowImage[] = [
@@ -115,6 +112,93 @@ const SEED_SLIDESHOW2: SlideshowImage[] = [
   { id: "s2_3", url: "/images/hero-medical.png" },
 ]
 
+// ─── Storage keys ─────────────────────────────────────────────────────────────
+const KEYS = {
+  team:       "hs_team",
+  products:   "hs_products",
+  jobs:       "hs_jobs",
+  clients:    "hs_clients",
+  footer:     "hs_footer",
+  slideshow:  "hs_slideshow",
+  slideshow2: "hs_slideshow2",
+  seeded:     "hs_seeded",
+}
+
+let isHydrated = false
+export function markHydrated() { isHydrated = true }
+
+function isBrowser() {
+  return typeof window !== "undefined" && isHydrated
+}
+
+function seed() {
+  if (!isBrowser()) return
+  if (localStorage.getItem(KEYS.seeded)) return
+  localStorage.setItem(KEYS.team,       JSON.stringify(SEED_TEAM))
+  localStorage.setItem(KEYS.products,   JSON.stringify(SEED_PRODUCTS))
+  localStorage.setItem(KEYS.jobs,       JSON.stringify(SEED_JOBS))
+  localStorage.setItem(KEYS.clients,    JSON.stringify(SEED_CLIENTS))
+  localStorage.setItem(KEYS.footer,     JSON.stringify(SEED_FOOTER))
+  localStorage.setItem(KEYS.slideshow,  JSON.stringify(SEED_SLIDESHOW))
+  localStorage.setItem(KEYS.slideshow2, JSON.stringify(SEED_SLIDESHOW2))
+  localStorage.setItem(KEYS.seeded,     "1")
+}
+
+// ─── Generic helpers ──────────────────────────────────────────────────────────
+function getList<T>(key: string, fallback: T[]): T[] {
+  seed()
+  if (!isBrowser()) return fallback
+  try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback } catch { return fallback }
+}
+
+function saveList<T>(key: string, data: T[]): boolean {
+  if (!isBrowser()) return false
+  try {
+    localStorage.setItem(key, JSON.stringify(data))
+    // Notify all same-tab listeners (useStore hooks) to re-render immediately
+    window.dispatchEvent(new Event("hs_store_updated"))
+    return true
+  } catch (e: any) {
+    console.error("Storage Error:", e)
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      alert("⚠️ Storage limit exceeded!\n\nThe file (image or PDF) you uploaded is too large. Since this is a local demo, browser storage is limited to ~5MB total. Please use a smaller file or compress your PDF.")
+    } else {
+      alert("An error occurred while saving: " + e.message)
+    }
+    return false
+  }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2) }
+
+// ─── Team ─────────────────────────────────────────────────────────────────────
+export function getTeam():                       TeamMember[] { return getList(KEYS.team, SEED_TEAM) }
+export function saveTeam(data: TeamMember[]):    boolean      { return saveList(KEYS.team, data) }
+export function addTeamMember(m: Omit<TeamMember,"id">):    TeamMember | null { const n={...m,id:uid()}; return saveTeam([...getTeam(),n]) ? n : null }
+export function updateTeamMember(m: TeamMember): boolean      { return saveTeam(getTeam().map(x=>x.id===m.id?m:x)) }
+export function deleteTeamMember(id: string):    boolean      { return saveTeam(getTeam().filter(x=>x.id!==id)) }
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+export function getProducts():                   Product[]    { return getList(KEYS.products, SEED_PRODUCTS) }
+export function saveProducts(data: Product[]):   boolean      { return saveList(KEYS.products, data) }
+export function addProduct(p: Omit<Product,"id">):   Product | null { const n={...p,id:uid()}; return saveProducts([...getProducts(),n]) ? n : null }
+export function updateProduct(p: Product):       boolean      { return saveProducts(getProducts().map(x=>x.id===p.id?p:x)) }
+export function deleteProduct(id: string):       boolean      { return saveProducts(getProducts().filter(x=>x.id!==id)) }
+
+// ─── Jobs ─────────────────────────────────────────────────────────────────────
+export function getJobs():                       Job[]        { return getList(KEYS.jobs, SEED_JOBS) }
+export function saveJobs(data: Job[]):           boolean      { return saveList(KEYS.jobs, data) }
+export function addJob(j: Omit<Job,"id">):           Job | null   { const n={...j,id:uid()}; return saveJobs([...getJobs(),n]) ? n : null }
+export function updateJob(j: Job):               boolean      { return saveJobs(getJobs().map(x=>x.id===j.id?j:x)) }
+export function deleteJob(id: string):           boolean      { return saveJobs(getJobs().filter(x=>x.id!==id)) }
+
+// ─── Clients ──────────────────────────────────────────────────────────────────
+export function getClients():                       HospitalClient[] { return getList(KEYS.clients, SEED_CLIENTS) }
+export function saveClients(data: HospitalClient[]): boolean         { return saveList(KEYS.clients, data) }
+export function addClient(c: Omit<HospitalClient,"id">): HospitalClient | null { const n={...c,id:uid()}; return saveClients([...getClients(),n]) ? n : null }
+export function updateClient(c: HospitalClient):    boolean         { return saveClients(getClients().map(x=>x.id===c.id?c:x)) }
+export function deleteClient(id: string):           boolean         { return saveClients(getClients().filter(x=>x.id!==id)) }
+
 export const PRODUCT_CATEGORIES = [
   "Medical Equipment",
   "Biomedical Equipment",
@@ -124,268 +208,80 @@ export const PRODUCT_CATEGORIES = [
   "Packaging Solutions",
 ]
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2) }
-
-// ─── Hydration ────────────────────────────────────────────────────────────────
-export let isHydrated = false
-export function markHydrated() { isHydrated = true }
-
-// ─── Seeding Logic ────────────────────────────────────────────────────────────
-export async function ensureSeeded() {
-  const metaRef = doc(db, "_meta", "seeding")
+export function getFooterSettings(): FooterSettings {
+  seed()
+  if (!isBrowser()) return SEED_FOOTER
   try {
-    const metaDoc = await getDoc(metaRef)
-    if (!metaDoc.exists() || !metaDoc.data().seeded) {
-      console.log("Seeding Firebase Firestore...")
-      const batch = writeBatch(db)
-
-      SEED_TEAM.forEach(t => batch.set(doc(db, "team", t.id), t))
-      SEED_PRODUCTS.forEach(p => batch.set(doc(db, "products", p.id), p))
-      SEED_JOBS.forEach(j => batch.set(doc(db, "jobs", j.id), j))
-      SEED_CLIENTS.forEach(c => batch.set(doc(db, "clients", c.id), c))
-      
-      batch.set(doc(db, "settings", "footer"), SEED_FOOTER)
-      batch.set(doc(db, "settings", "slideshow"), { items: SEED_SLIDESHOW })
-      batch.set(doc(db, "settings", "slideshow2"), { items: SEED_SLIDESHOW2 })
-      
-      batch.set(metaRef, { seeded: true })
-      
-      await batch.commit()
-      console.log("Seeding complete.")
-    }
-  } catch (err) {
-    console.error("Error ensuring seeded data:", err)
+    const raw = JSON.parse(localStorage.getItem(KEYS.footer) || "null") ?? SEED_FOOTER
+    // Migrate legacy single phone/email strings to arrays
+    if (!raw.phones) raw.phones = raw.phone ? [raw.phone] : SEED_FOOTER.phones
+    if (!raw.emails) raw.emails = raw.email ? [raw.email] : SEED_FOOTER.emails
+    delete raw.phone
+    delete raw.email
+    return raw as FooterSettings
+  } catch {
+    return SEED_FOOTER
   }
 }
 
-// ─── Generic Helpers ──────────────────────────────────────────────────────────
-
-async function uploadIfBase64(value: string | undefined, path: string): Promise<string | undefined> {
-  if (!value) return value
-  // Upload any data: URI (images, PDFs, etc.) to Supabase Storage
-  if (value.startsWith("data:")) {
-    return await uploadBase64File(value, path)
-  }
-  return value
-}
-
-// ─── Team ─────────────────────────────────────────────────────────────────────
-
-export async function addTeamMember(m: Omit<TeamMember, "id">): Promise<TeamMember | null> {
+export function saveFooterSettings(data: FooterSettings): boolean {
+  if (!isBrowser()) return false
   try {
-    const photoUrl = await uploadIfBase64(m.photo, "team")
-    const newMember: TeamMember = { ...m, id: uid(), photo: photoUrl || m.photo }
-    await setDoc(doc(db, "team", newMember.id), newMember)
-    return newMember
-  } catch (e) {
-    console.error(e)
-    return null
-  }
-}
-
-export async function updateTeamMember(m: TeamMember): Promise<boolean> {
-  try {
-    const photoUrl = await uploadIfBase64(m.photo, "team")
-    const updated = { ...m, photo: photoUrl || m.photo }
-    await setDoc(doc(db, "team", m.id), updated)
+    localStorage.setItem(KEYS.footer, JSON.stringify(data))
+    window.dispatchEvent(new Event("hs_store_updated"))
     return true
-  } catch (e) {
-    console.error(e)
+  } catch (e: any) {
+    console.error("Storage Error:", e)
+    alert("An error occurred while saving footer settings: " + e.message)
     return false
   }
 }
 
-export async function deleteTeamMember(id: string): Promise<boolean> {
+export function getSlideshow(): SlideshowImage[] {
+  seed()
+  if (!isBrowser()) return SEED_SLIDESHOW
   try {
-    await deleteDoc(doc(db, "team", id))
+    return JSON.parse(localStorage.getItem(KEYS.slideshow) || "null") ?? SEED_SLIDESHOW
+  } catch {
+    return SEED_SLIDESHOW
+  }
+}
+
+export function saveSlideshow(data: SlideshowImage[]): boolean {
+  if (!isBrowser()) return false
+  try {
+    localStorage.setItem(KEYS.slideshow, JSON.stringify(data))
+    window.dispatchEvent(new Event("hs_store_updated"))
     return true
-  } catch (e) {
-    console.error(e)
+  } catch (e: any) {
+    console.error("Storage Error:", e)
+    alert("An error occurred while saving slideshow settings: " + e.message)
     return false
   }
 }
 
-// ─── Products ─────────────────────────────────────────────────────────────────
-
-export async function addProduct(p: Omit<Product, "id">): Promise<Product | null> {
+export function getSlideshow2(): SlideshowImage[] {
+  seed()
+  if (!isBrowser()) return SEED_SLIDESHOW2
   try {
-    const [imageUrl, brochureUrl] = await Promise.all([
-      uploadIfBase64(p.image, "products"),
-      uploadIfBase64(p.brochure, "brochures"),
-    ])
-    const newProduct: Product = { ...p, id: uid(), image: imageUrl || p.image, brochure: brochureUrl || p.brochure }
-    await setDoc(doc(db, "products", newProduct.id), newProduct)
-    return newProduct
-  } catch (e) {
-    console.error(e)
-    return null
+    return JSON.parse(localStorage.getItem(KEYS.slideshow2) || "null") ?? SEED_SLIDESHOW2
+  } catch {
+    return SEED_SLIDESHOW2
   }
 }
 
-export async function updateProduct(p: Product): Promise<boolean> {
+export function saveSlideshow2(data: SlideshowImage[]): boolean {
+  if (!isBrowser()) return false
   try {
-    const [imageUrl, brochureUrl] = await Promise.all([
-      uploadIfBase64(p.image, "products"),
-      uploadIfBase64(p.brochure, "brochures"),
-    ])
-    const updated = { ...p, image: imageUrl || p.image, brochure: brochureUrl || p.brochure }
-    await setDoc(doc(db, "products", p.id), updated)
+    localStorage.setItem(KEYS.slideshow2, JSON.stringify(data))
+    window.dispatchEvent(new Event("hs_store_updated"))
     return true
-  } catch (e) {
-    console.error(e)
+  } catch (e: any) {
+    console.error("Storage Error:", e)
+    alert("An error occurred while saving slideshow2 settings: " + e.message)
     return false
   }
 }
 
-export async function deleteProduct(id: string): Promise<boolean> {
-  try {
-    await deleteDoc(doc(db, "products", id))
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
 
-export async function saveProducts(products: Product[]): Promise<boolean> {
-  try {
-    const snap = await getDocs(collection(db, "products"))
-    const existingIds = snap.docs.map(d => d.id)
-    const newIds = products.map(p => p.id)
-    const toDelete = existingIds.filter(id => !newIds.includes(id))
-    
-    const batch = writeBatch(db)
-    toDelete.forEach(id => batch.delete(doc(db, "products", id)))
-    await batch.commit()
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
 
-// ─── Jobs ─────────────────────────────────────────────────────────────────────
-
-export async function addJob(j: Omit<Job, "id">): Promise<Job | null> {
-  try {
-    const newJob: Job = { ...j, id: uid() }
-    await setDoc(doc(db, "jobs", newJob.id), newJob)
-    return newJob
-  } catch (e) {
-    console.error(e)
-    return null
-  }
-}
-
-export async function updateJob(j: Job): Promise<boolean> {
-  try {
-    await setDoc(doc(db, "jobs", j.id), j)
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function deleteJob(id: string): Promise<boolean> {
-  try {
-    await deleteDoc(doc(db, "jobs", id))
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-// ─── Clients ──────────────────────────────────────────────────────────────────
-
-export async function addClient(c: Omit<HospitalClient, "id">): Promise<HospitalClient | null> {
-  try {
-    const logoUrl = await uploadIfBase64(c.logo, "clients")
-    const newClient: HospitalClient = { ...c, id: uid(), logo: logoUrl || c.logo }
-    await setDoc(doc(db, "clients", newClient.id), newClient)
-    return newClient
-  } catch (e) {
-    console.error(e)
-    return null
-  }
-}
-
-export async function updateClient(c: HospitalClient): Promise<boolean> {
-  try {
-    const logoUrl = await uploadIfBase64(c.logo, "clients")
-    const updated = { ...c, logo: logoUrl || c.logo }
-    await setDoc(doc(db, "clients", c.id), updated)
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function deleteClient(id: string): Promise<boolean> {
-  try {
-    await deleteDoc(doc(db, "clients", id))
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function saveClients(clients: HospitalClient[]): Promise<boolean> {
-  try {
-    const snap = await getDocs(collection(db, "clients"))
-    const existingIds = snap.docs.map(d => d.id)
-    const newIds = clients.map(c => c.id)
-    const toDelete = existingIds.filter(id => !newIds.includes(id))
-    
-    const batch = writeBatch(db)
-    toDelete.forEach(id => batch.delete(doc(db, "clients", id)))
-    await batch.commit()
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-// ─── Settings ─────────────────────────────────────────────────────────────────
-
-export async function saveFooterSettings(data: FooterSettings): Promise<boolean> {
-  try {
-    await setDoc(doc(db, "settings", "footer"), data)
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function saveSlideshow(data: SlideshowImage[]): Promise<boolean> {
-  try {
-    const items = await Promise.all(data.map(async (s) => ({
-      id: s.id,
-      url: (await uploadIfBase64(s.url, "slideshow")) || s.url
-    })))
-    await setDoc(doc(db, "settings", "slideshow"), { items })
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
-
-export async function saveSlideshow2(data: SlideshowImage[]): Promise<boolean> {
-  try {
-    const items = await Promise.all(data.map(async (s) => ({
-      id: s.id,
-      url: (await uploadIfBase64(s.url, "slideshow2")) || s.url
-    })))
-    await setDoc(doc(db, "settings", "slideshow2"), { items })
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}

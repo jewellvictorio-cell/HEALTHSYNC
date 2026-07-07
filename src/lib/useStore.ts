@@ -1,87 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  useStore — React hooks for live-synced localStorage data
+//  Pages using these hooks automatically re-render whenever the Admin saves
+//  changes, even across browser tabs (via the 'storage' event).
+// ─────────────────────────────────────────────────────────────────────────────
+
 "use client"
 
 import * as React from "react"
-import { db } from "./firebase"
-import { collection, doc, onSnapshot } from "firebase/firestore"
-import { ensureSeeded, type TeamMember, type Product, type Job, type HospitalClient, type FooterSettings, type SlideshowImage } from "./store"
+import {
+  getTeam, getProducts, getJobs, getClients, getFooterSettings, getSlideshow, getSlideshow2, markHydrated,
+  type TeamMember, type Product, type Job, type HospitalClient, type FooterSettings, type SlideshowImage,
+} from "./store"
 
-// Seed data once on load
-if (typeof window !== "undefined") {
-  ensureSeeded()
-}
+// Generic hook: reads from localStorage immediately, then listens for changes
+function useLiveStore<T>(loader: () => T, storageKey: string): T {
+  const [data, setData] = React.useState<T>(loader)
 
-export function useTeam(): TeamMember[] {
-  const [data, setData] = React.useState<TeamMember[]>([])
   React.useEffect(() => {
-    return onSnapshot(collection(db, "team"), (snap) => {
-      setData(snap.docs.map(d => d.data() as TeamMember))
-    })
-  }, [])
+    // Perform hydration sync on initial client mount
+    markHydrated()
+    setData(loader())
+
+    // Re-read whenever THIS tab saves (custom event fired by store)
+    function onCustom() { setData(loader()) }
+    // Re-read whenever ANOTHER tab saves (native browser storage event)
+    function onStorage(e: StorageEvent) {
+      if (!storageKey || e.key === storageKey || e.key === null) {
+        setData(loader())
+      }
+    }
+
+    window.addEventListener("hs_store_updated", onCustom)
+    window.addEventListener("storage", onStorage)
+    return () => {
+      window.removeEventListener("hs_store_updated", onCustom)
+      window.removeEventListener("storage", onStorage)
+    }
+  }, [loader, storageKey])
+
   return data
 }
 
-export function useProducts(): Product[] {
-  const [data, setData] = React.useState<Product[]>([])
-  React.useEffect(() => {
-    return onSnapshot(collection(db, "products"), (snap) => {
-      setData(snap.docs.map(d => d.data() as Product))
-    })
-  }, [])
-  return data
-}
+export function useTeam():     TeamMember[]    { return useLiveStore(getTeam,     "hs_team") }
+export function useProducts(): Product[]       { return useLiveStore(getProducts, "hs_products") }
+export function useJobs():     Job[]           { return useLiveStore(getJobs,     "hs_jobs") }
+export function useClients():  HospitalClient[] { return useLiveStore(getClients,  "hs_clients") }
+export function useFooterSettings(): FooterSettings { return useLiveStore(getFooterSettings, "hs_footer") }
+export function useSlideshow(): SlideshowImage[] { return useLiveStore(getSlideshow, "hs_slideshow") }
+export function useSlideshow2(): SlideshowImage[] { return useLiveStore(getSlideshow2, "hs_slideshow2") }
 
-export function useJobs(): Job[] {
-  const [data, setData] = React.useState<Job[]>([])
-  React.useEffect(() => {
-    return onSnapshot(collection(db, "jobs"), (snap) => {
-      setData(snap.docs.map(d => d.data() as Job))
-    })
-  }, [])
-  return data
-}
 
-export function useClients(): HospitalClient[] {
-  const [data, setData] = React.useState<HospitalClient[]>([])
-  React.useEffect(() => {
-    return onSnapshot(collection(db, "clients"), (snap) => {
-      setData(snap.docs.map(d => d.data() as HospitalClient))
-    })
-  }, [])
-  return data
-}
 
-const DEFAULT_FOOTER: FooterSettings = {
-  address: "Upper Kasinay St., Darangan, Binangonan, Rizal, Philippines",
-  phone: "+63 915 392 5794",
-  email: "healthsync.med@gmail.com",
-}
-
-export function useFooterSettings(): FooterSettings {
-  const [data, setData] = React.useState<FooterSettings>(DEFAULT_FOOTER)
-  React.useEffect(() => {
-    return onSnapshot(doc(db, "settings", "footer"), (snap) => {
-      if (snap.exists()) setData(snap.data() as FooterSettings)
-    })
-  }, [])
-  return data
-}
-
-export function useSlideshow(): SlideshowImage[] {
-  const [data, setData] = React.useState<SlideshowImage[]>([])
-  React.useEffect(() => {
-    return onSnapshot(doc(db, "settings", "slideshow"), (snap) => {
-      if (snap.exists() && snap.data().items) setData(snap.data().items as SlideshowImage[])
-    })
-  }, [])
-  return data
-}
-
-export function useSlideshow2(): SlideshowImage[] {
-  const [data, setData] = React.useState<SlideshowImage[]>([])
-  React.useEffect(() => {
-    return onSnapshot(doc(db, "settings", "slideshow2"), (snap) => {
-      if (snap.exists() && snap.data().items) setData(snap.data().items as SlideshowImage[])
-    })
-  }, [])
-  return data
-}

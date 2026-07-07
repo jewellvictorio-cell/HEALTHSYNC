@@ -1,6 +1,9 @@
+"use client"
+
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { CheckCircle2, Wallet, RefreshCw, Key, Landmark } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { CheckCircle2, Key, Landmark } from "lucide-react"
 
 const rentToOwnBenefits = [
   "No massive initial capital required",
@@ -54,7 +57,9 @@ export default function OffersPage() {
                 </ul>
               </CardContent>
               <div className="p-8 pt-0">
-                <Button className="w-full h-12 font-bold uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">Inquire for Rent-To-Own</Button>
+                <Button asChild className="w-full h-12 font-bold uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
+                  <Link href="/contact?inquiry=rent-to-own#quote-form">Inquire for Rent-To-Own</Link>
+                </Button>
               </div>
             </Card>
 
@@ -78,7 +83,9 @@ export default function OffersPage() {
                 </ul>
               </CardContent>
               <div className="p-8 pt-0">
-                <Button variant="secondary" className="w-full h-12 font-bold uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-secondary/20">Request Payment Plan</Button>
+                <Button asChild variant="secondary" className="w-full h-12 font-bold uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-secondary/20">
+                  <Link href="/contact?inquiry=payment-plan#quote-form">Request Payment Plan</Link>
+                </Button>
               </div>
             </Card>
           </div>

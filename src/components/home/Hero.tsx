@@ -4,7 +4,7 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShieldCheck, BadgeCheck, Truck, Phone } from "lucide-react"
+import { ShieldCheck, BadgeCheck, Truck, Phone, ChevronLeft, ChevronRight } from "lucide-react"
 import { useSlideshow } from "@/lib/useStore"
 
 const trustBadges = [
@@ -17,15 +17,20 @@ export function Hero() {
   const slideshow = useSlideshow()
   const [index, setIndex] = React.useState(0)
 
+  const [speed, setSpeed] = React.useState(5000)
+
   const slides = slideshow.length > 0 ? slideshow : [{ id: "fallback", url: "/images/hero-medical.png" }]
 
   React.useEffect(() => {
     if (slides.length <= 1) return
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length)
-    }, 5000)
+    }, speed)
     return () => clearInterval(timer)
-  }, [slides.length, index])
+  }, [slides.length, speed])
+
+  const speedUp = () => setSpeed(1200)
+  const resetSpeed = () => setSpeed(5000)
 
   function handleDotClick(idx: number) {
     setIndex(idx)
@@ -76,7 +81,7 @@ export function Hero() {
 
           {/* Right: Image / Slideshow */}
           <div className="relative lg:h-[520px] xl:h-[580px] flex flex-col justify-between animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 ease-out fill-mode-both">
-            <div className="relative aspect-[4/3] lg:aspect-auto h-full overflow-hidden rounded-2xl shadow-2xl transition-transform duration-700 hover:scale-[1.02]">
+            <div className="relative aspect-[4/3] lg:aspect-auto h-full overflow-hidden rounded-2xl shadow-2xl transition-transform duration-700 hover:scale-[1.02] group/slide">
               {slides.map((slide, idx) => (
                 <div
                   key={slide.id}
@@ -95,6 +100,34 @@ export function Hero() {
                 </div>
               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-secondary/30 via-transparent to-transparent z-20" />
+
+              {/* Prev / Next Arrows */}
+              {slides.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setIndex((prev) => (prev - 1 + slides.length) % slides.length)}
+                    onMouseEnter={speedUp}
+                    onMouseLeave={resetSpeed}
+                    onTouchStart={speedUp}
+                    onTouchEnd={resetSpeed}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white border border-border flex items-center justify-center text-secondary hover:text-primary transition-all shadow-md active:scale-95 opacity-80 md:opacity-0 md:group-hover/slide:opacity-100 focus:opacity-100"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setIndex((prev) => (prev + 1) % slides.length)}
+                    onMouseEnter={speedUp}
+                    onMouseLeave={resetSpeed}
+                    onTouchStart={speedUp}
+                    onTouchEnd={resetSpeed}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white border border-border flex items-center justify-center text-secondary hover:text-primary transition-all shadow-md active:scale-95 opacity-80 md:opacity-0 md:group-hover/slide:opacity-100 focus:opacity-100"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Pagination Dots */}

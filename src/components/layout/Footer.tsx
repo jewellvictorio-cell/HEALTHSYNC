@@ -24,7 +24,7 @@ export function Footer() {
               Where Faith Meets Excellence in Healthcare. Providing quality medical solutions across the Philippines.
             </p>
             <div className="flex gap-4">
-              <Link href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
+              <Link href="https://www.facebook.com/people/Healthsync-Medical-Solutions-Corporation/61573091682697/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
                 <Facebook className="h-5 w-5" />
               </Link>
             </div>
@@ -54,15 +54,16 @@ export function Footer() {
             <h3 className="font-headline text-sm font-semibold uppercase tracking-wider text-white mb-6">Our Solutions</h3>
             <ul className="space-y-4">
               {[
-                'Medical Equipment',
-                'Laboratory Equipment',
-                'Medical Supplies',
-                'Technical Support',
-                'Packaging Solutions'
+                { label: 'Medical Equipment', href: '/products?category=Medical+Equipment' },
+                { label: 'Biomedical Equipment', href: '/products?category=Biomedical+Equipment' },
+                { label: 'Laboratory Equipment', href: '/products?category=Laboratory+Equipment' },
+                { label: 'Medical Supplies', href: '/products?category=Medical+Supplies' },
+                { label: 'Packaging Solutions', href: '/products?category=Packaging+Solutions' },
+                { label: 'Technical Support', href: '/contact?inquiry=sales#quote-form' },
               ].map((item) => (
-                <li key={item}>
-                  <Link href="/products" className="text-sm text-secondary-foreground/70 hover:text-white transition-colors">
-                    {item}
+                <li key={item.label}>
+                  <Link href={item.href} className="text-sm text-secondary-foreground/70 hover:text-white transition-colors">
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -78,14 +79,26 @@ export function Footer() {
                   {settings.address}
                 </span>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary shrink-0" />
-                <span className="text-sm text-secondary-foreground/70">{settings.phone}</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary shrink-0" />
-                <span className="text-sm text-secondary-foreground/70 break-all">{settings.email}</span>
-              </li>
+              {/* Phones — icon only on first */}
+              {(settings.phones || []).filter((p: string) => p?.trim()).map((p: string, i: number) => (
+                <li key={i} className="flex items-center gap-3">
+                  {i === 0
+                    ? <Phone className="h-5 w-5 text-primary shrink-0" />
+                    : <span className="h-5 w-5 shrink-0" />
+                  }
+                  <span className="text-sm text-secondary-foreground/70">{p}</span>
+                </li>
+              ))}
+              {/* Emails — icon only on first */}
+              {(settings.emails || []).filter((em: string) => em?.trim()).map((em: string, i: number) => (
+                <li key={i} className="flex items-center gap-3">
+                  {i === 0
+                    ? <Mail className="h-5 w-5 text-primary shrink-0" />
+                    : <span className="h-5 w-5 shrink-0" />
+                  }
+                  <span className="text-sm text-secondary-foreground/70 break-all">{em}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
