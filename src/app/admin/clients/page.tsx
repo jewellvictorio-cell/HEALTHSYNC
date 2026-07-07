@@ -2,15 +2,16 @@
 
 import * as React from "react"
 import {
-  getClients, addClient, updateClient, deleteClient, saveClients,
+  addClient, updateClient, deleteClient, saveClients,
   type HospitalClient
 } from "@/lib/store"
+import { useClients } from "@/lib/useStore"
 import { Plus, Pencil, Trash2, X, Check, Building2, Landmark, Image as ImageIcon, Loader2 } from "lucide-react"
 import { useToast } from "@/components/admin/AdminToast"
 import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
 import Image from "next/image"
 
-const EMPTY = { name: "", logo: "", type: "private" as const }
+const EMPTY: { name: string; logo: string; type: "government" | "private" } = { name: "", logo: "", type: "private" }
 
 function AdminModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -29,7 +30,7 @@ function AdminModal({ title, onClose, children }: { title: string; onClose: () =
 }
 
 export default function AdminClientsPage() {
-  const [clients, setClients] = React.useState<HospitalClient[]>([])
+  const clients = useClients()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   
   // Add/Edit states
@@ -45,9 +46,6 @@ export default function AdminClientsPage() {
   const [deletingBulk, setDeletingBulk] = React.useState(false)
 
   const { toast } = useToast()
-
-  function reload() { setClients(getClients()) }
-  React.useEffect(reload, [])
 
   const allSelected = clients.length > 0 && clients.every(c => selectedIds.includes(c.id))
 
@@ -74,35 +72,30 @@ export default function AdminClientsPage() {
   async function handleSave() {
     if (!form.name.trim()) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 600))
     const success = editing 
-      ? updateClient({ ...editing, ...form }) 
-      : addClient(form)
+      ? await updateClient({ ...editing, ...form }) 
+      : await addClient(form)
     setSaving(false)
-    if (success !== null) {
+    if (success !== null && success !== false) {
       setShowForm(false)
-      reload()
       toast("Client data successfully saved!")
     }
   }
 
-  function handleDelete(id: string) {
-    deleteClient(id)
+  async function handleDelete(id: string) {
+    await deleteClient(id)
     setSelectedIds(prev => prev.filter(x => x !== id))
     setDeleteId(null)
-    reload()
     toast("Hospital client removed.", "error")
   }
 
   async function handleBulkDelete() {
     setDeletingBulk(true)
-    await new Promise(r => setTimeout(r, 800))
     const remaining = clients.filter(c => !selectedIds.includes(c.id))
-    saveClients(remaining)
+    await saveClients(remaining)
     setSelectedIds([])
     setDeletingBulk(false)
     setBulkDeleteConfirm(false)
-    reload()
     toast("Selected clients removed.")
   }
 

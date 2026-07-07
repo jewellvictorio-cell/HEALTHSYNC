@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { getJobs, addJob, updateJob, deleteJob, type Job } from "@/lib/store"
+import { addJob, updateJob, deleteJob, type Job } from "@/lib/store"
+import { useJobs } from "@/lib/useStore"
 import { Plus, Pencil, Trash2, X, Check, Briefcase, MapPin, Calendar, Loader2 } from "lucide-react"
 import { useToast } from "@/components/admin/AdminToast"
 
@@ -49,16 +50,13 @@ function AdminInput({ value, onChange, placeholder, type = "text", className = "
 }
 
 export default function AdminCareersPage() {
-  const [jobs,     setJobs]     = React.useState<Job[]>([])
+  const jobs = useJobs()
   const [form,     setForm]     = React.useState(EMPTY)
   const [editing,  setEditing]  = React.useState<Job | null>(null)
   const [showForm, setShowForm] = React.useState(false)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [saving,   setSaving]   = React.useState(false)
   const { toast } = useToast()
-
-  function reload() { setJobs(getJobs()) }
-  React.useEffect(reload, [])
 
   function openAdd() { setEditing(null); setForm({ ...EMPTY, postedDate: today }); setShowForm(true) }
   function openEdit(j: Job) {
@@ -69,14 +67,12 @@ export default function AdminCareersPage() {
   async function handleSave() {
     if (!form.title.trim() || !form.shortDescription.trim()) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 600))
-    editing ? updateJob({ ...editing, ...form }) : addJob(form)
+    editing ? await updateJob({ ...editing, ...form }) : await addJob(form)
     setSaving(false)
     setShowForm(false)
-    reload()
     toast(editing ? "Job posting successfully updated!" : "Job position successfully posted!")
   }
-  function handleDelete(id: string) { deleteJob(id); setDeleteId(null); reload(); toast("Job posting removed.", "error") }
+  async function handleDelete(id: string) { await deleteJob(id); setDeleteId(null); toast("Job posting removed.", "error") }
 
   function formatDate(d: string) {
     try { return new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" }) } catch { return d }

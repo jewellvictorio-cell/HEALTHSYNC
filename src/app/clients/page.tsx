@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { getClients, type HospitalClient } from "@/lib/store"
+import { type HospitalClient } from "@/lib/store"
 import { useClients } from "@/lib/useStore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Landmark, Building2, Globe, Heart, ShieldCheck, Users } from "lucide-react"
@@ -62,41 +62,47 @@ export default function ClientsPage() {
         </div>
       </section>
 
-      {/* 3. Our Clients & Partners (dynamically rendered from Admin state) */}
-      <section className="py-24 bg-muted/20">
+      {/* 3. Our Clients & Partners — horizontal logo row */}
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
+          {/* Heading with decorative lines */}
           <div className="text-center mb-16 animate-in fade-in duration-1000">
-            <h2 className="text-3xl font-headline font-bold text-secondary mb-4 uppercase tracking-tight">Our Clients & Partners</h2>
-            <p className="text-muted-foreground font-body">Strategic collaborations driving healthcare forward.</p>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="h-px w-16 bg-primary/30" />
+              <span className="text-primary text-sm font-bold uppercase tracking-[0.2em] font-headline">Trusted by</span>
+              <span className="h-px w-16 bg-primary/30" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-headline font-bold text-secondary uppercase tracking-tight">
+              Our Clients <span className="text-primary">&</span> Partners
+            </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {clients.map((client, i) => (
-              <div key={client.id} className="flex flex-col items-center justify-between text-center group h-44 py-2 animate-in zoom-in-95 fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
-                {client.logo ? (
-                  <div className="flex-grow flex items-center justify-center w-full h-28 relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+
+          {clients.length > 0 ? (
+            <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14 lg:gap-16 animate-in fade-in duration-1000 delay-200 fill-mode-both">
+              {clients.map((client, i) => (
+                <div
+                  key={client.id}
+                  className="group flex items-center justify-center animate-in zoom-in-95 fill-mode-both"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                  title={client.name}
+                >
+                  {client.logo ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={client.logo}
                       alt={client.name}
-                      className="h-28 w-auto max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                      className="h-20 md:h-24 w-auto max-w-[140px] object-contain transition-all duration-500 group-hover:scale-110"
                     />
-                  </div>
-                ) : (
-                  <div className="flex-grow flex items-center justify-center">
-                    <div className="bg-primary/5 w-16 h-16 rounded-full flex items-center justify-center text-primary mb-2">
-                      <Building2 className="h-8 w-8" />
+                  ) : (
+                    <div className="bg-muted/50 w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center text-muted-foreground/40 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-500">
+                      <Building2 className="h-10 w-10" />
                     </div>
-                  </div>
-                )}
-                <span className="text-[11px] font-bold text-secondary/60 uppercase tracking-wider line-clamp-1 mt-auto w-full font-headline px-1">
-                  {client.name}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {clients.length === 0 && (
-            <div className="text-center py-20 bg-white border border-dashed border-border rounded-2xl">
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-muted/10 border border-dashed border-border rounded-2xl">
               <Building2 className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
               <p className="font-semibold text-muted-foreground font-headline">No clients added yet</p>
               <p className="text-sm text-muted-foreground/60 mt-1 font-body">Add clients from the admin side to get started.</p>

@@ -1,8 +1,7 @@
 // src/lib/firebase.ts
-import { initializeApp, getApps, FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, Storage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,7 +22,8 @@ if (!getApps().length) {
 
 export const db: Firestore = getFirestore(app);
 export const auth: Auth = getAuth(app);
-export const storage: Storage = getStorage(app);
+// Using Supabase for storage instead of Firebase
+
 
 // Optional: Google sign‑in helper
 export const signInWithGoogle = async () => {

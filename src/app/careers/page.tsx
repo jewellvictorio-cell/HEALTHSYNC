@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { getJobs, type Job } from "@/lib/store"
+import { type Job } from "@/lib/store"
 import { useJobs } from "@/lib/useStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"

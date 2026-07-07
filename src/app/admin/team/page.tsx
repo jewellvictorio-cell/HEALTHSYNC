@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { getTeam, addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
+import { addTeamMember, updateTeamMember, deleteTeamMember, type TeamMember } from "@/lib/store"
+import { useTeam } from "@/lib/useStore"
 import { Plus, Pencil, Trash2, X, Check, User, Eye, Loader2 } from "lucide-react"
 import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
 import { useToast } from "@/components/admin/AdminToast"
@@ -47,7 +48,7 @@ function AdminInput({ value, onChange, placeholder, className = "" }: { value: s
 }
 
 export default function AdminTeamPage() {
-  const [members,  setMembers]  = React.useState<TeamMember[]>([])
+  const members = useTeam()
   const [form,     setForm]     = React.useState(EMPTY)
   const [editing,  setEditing]  = React.useState<TeamMember | null>(null)
   const [showForm, setShowForm] = React.useState(false)
@@ -57,24 +58,19 @@ export default function AdminTeamPage() {
   const [saving,    setSaving]  = React.useState(false)
   const { toast } = useToast()
 
-  function reload() { setMembers(getTeam()) }
-  React.useEffect(reload, [])
-
   function openAdd()          { setEditing(null); setForm(EMPTY); setImgError(false); setShowForm(true) }
   function openEdit(m: TeamMember) { setEditing(m); setForm({ name: m.name, role: m.role, photo: m.photo, email: m.email || "", password: m.password || "" }); setImgError(false); setShowForm(true) }
   async function handleSave() {
     if (!form.name.trim() || !form.role.trim()) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 600))
-    const success = editing ? updateTeamMember({ ...editing, ...form }) : addTeamMember(form)
+    const success = editing ? await updateTeamMember({ ...editing, ...form }) : await addTeamMember(form)
     setSaving(false)
-    if (success !== false) {
+    if (success !== false && success !== null) {
       setShowForm(false)
-      reload()
       toast(editing ? "Team member successfully updated!" : "Team member successfully added!")
     }
   }
-  function handleDelete(id: string) { deleteTeamMember(id); setDeleteId(null); reload(); toast("Team member removed.", "error") }
+  async function handleDelete(id: string) { await deleteTeamMember(id); setDeleteId(null); toast("Team member removed.", "error") }
 
   function handleImageUpload(raw: string) {
     setCropImageSrc(raw)

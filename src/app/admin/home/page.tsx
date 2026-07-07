@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { getSlideshow, saveSlideshow, getSlideshow2, saveSlideshow2, type SlideshowImage } from "@/lib/store"
+import { saveSlideshow, saveSlideshow2, type SlideshowImage } from "@/lib/store"
+import { useSlideshow, useSlideshow2 } from "@/lib/useStore"
 import { useToast } from "@/components/admin/AdminToast"
 import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
 import { Trash2, ArrowUp, ArrowDown, Plus, Loader2, Check, LayoutGrid, Layers } from "lucide-react"
@@ -25,10 +26,16 @@ export default function AdminHomePage() {
   // Selection states
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
 
+  const heroStore = useSlideshow()
+  const aboutStore = useSlideshow2()
+
   React.useEffect(() => {
-    setHeroSlides(getSlideshow())
-    setAboutSlides(getSlideshow2())
-  }, [])
+    setHeroSlides(heroStore)
+  }, [heroStore])
+
+  React.useEffect(() => {
+    setAboutSlides(aboutStore)
+  }, [aboutStore])
 
   // Clear selections when switching tab
   React.useEffect(() => {
@@ -51,15 +58,14 @@ export default function AdminHomePage() {
 
   async function handleSave() {
     setSaving(true)
-    await new Promise(r => setTimeout(r, 600))
     let success = false
     if (activeTab === "hero") {
-      success = saveSlideshow(heroSlides)
+      success = await saveSlideshow(heroSlides)
     } else {
-      success = saveSlideshow2(aboutSlides)
+      success = await saveSlideshow2(aboutSlides)
     }
     setSaving(false)
-    if (success) {
+    if (success !== false) {
       toast("Slideshow arrangement updated!")
     }
   }
@@ -83,15 +89,15 @@ export default function AdminHomePage() {
     if (activeTab === "hero") {
       const newList = [...heroSlides, newSlide]
       setHeroSlides(newList)
-      success = saveSlideshow(newList)
+      success = await saveSlideshow(newList)
     } else {
       const newList = [...aboutSlides, newSlide]
       setAboutSlides(newList)
-      success = saveSlideshow2(newList)
+      success = await saveSlideshow2(newList)
     }
 
     setBusyId(null)
-    if (success) {
+    if (success !== false) {
       toast("Slideshow photo successfully saved!")
     }
   }
@@ -104,16 +110,16 @@ export default function AdminHomePage() {
     if (activeTab === "hero") {
       const newList = heroSlides.filter(slide => slide.id !== id)
       setHeroSlides(newList)
-      success = saveSlideshow(newList)
+      success = await saveSlideshow(newList)
     } else {
       const newList = aboutSlides.filter(slide => slide.id !== id)
       setAboutSlides(newList)
-      success = saveSlideshow2(newList)
+      success = await saveSlideshow2(newList)
     }
 
     setSelectedIds(prev => prev.filter(x => x !== id))
     setBusyId(null)
-    if (success) {
+    if (success !== false) {
       toast("Slideshow photo successfully removed!")
     }
   }
@@ -126,16 +132,16 @@ export default function AdminHomePage() {
     if (activeTab === "hero") {
       const newList = heroSlides.filter(slide => !selectedIds.includes(slide.id))
       setHeroSlides(newList)
-      success = saveSlideshow(newList)
+      success = await saveSlideshow(newList)
     } else {
       const newList = aboutSlides.filter(slide => !selectedIds.includes(slide.id))
       setAboutSlides(newList)
-      success = saveSlideshow2(newList)
+      success = await saveSlideshow2(newList)
     }
 
     setSelectedIds([])
     setBusyId(null)
-    if (success) {
+    if (success !== false) {
       toast("Selected slideshow photos successfully removed!")
     }
   }
@@ -155,14 +161,14 @@ export default function AdminHomePage() {
     let success = false
     if (activeTab === "hero") {
       setHeroSlides(list)
-      success = saveSlideshow(list)
+      success = await saveSlideshow(list)
     } else {
       setAboutSlides(list)
-      success = saveSlideshow2(list)
+      success = await saveSlideshow2(list)
     }
 
     setBusyId(null)
-    if (success) {
+    if (success !== false) {
       toast("Slideshow arrangement updated!")
     }
   }

@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { getProducts, addProduct, updateProduct, deleteProduct, saveProducts, PRODUCT_CATEGORIES, type Product } from "@/lib/store"
+import { addProduct, updateProduct, deleteProduct, saveProducts, PRODUCT_CATEGORIES, type Product } from "@/lib/store"
+import { useProducts } from "@/lib/useStore"
 import { Plus, Pencil, Trash2, X, Check, Package, Search, Filter, FileText, Loader2 } from "lucide-react"
 import { useToast } from "@/components/admin/AdminToast"
 import { AdminImageCropper, ImageUploadButton } from "@/components/admin/AdminImageCropper"
@@ -26,7 +27,7 @@ function AdminModal({ title, onClose, children }: { title: string; onClose: () =
 }
 
 export default function AdminProductsPage() {
-  const [products,  setProducts]  = React.useState<Product[]>([])
+  const products = useProducts()
   const [form,      setForm]      = React.useState(EMPTY)
   const [editing,   setEditing]   = React.useState<Product | null>(null)
   const [showForm,  setShowForm]  = React.useState(false)
@@ -43,9 +44,6 @@ export default function AdminProductsPage() {
   const [deletingBulk, setDeletingBulk] = React.useState(false)
 
   const { toast } = useToast()
-
-  function reload() { setProducts(getProducts()) }
-  React.useEffect(reload, [])
 
   const displayed = products.filter(p => {
     const matchCat = catFilter === "All" || p.category === catFilter
@@ -78,33 +76,28 @@ export default function AdminProductsPage() {
   async function handleSave() {
     if (!form.name.trim()) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 600))
-    const success = editing ? updateProduct({ ...editing, ...form }) : addProduct(form)
+    const success = editing ? await updateProduct({ ...editing, ...form }) : await addProduct(form)
     setSaving(false)
-    if (success !== false) {
+    if (success !== false && success !== null) {
       setShowForm(false)
-      reload()
       toast(editing ? "Product successfully updated!" : "Product successfully added!")
     }
   }
 
-  function handleDelete(id: string) {
-    deleteProduct(id)
+  async function handleDelete(id: string) {
+    await deleteProduct(id)
     setSelectedIds(prev => prev.filter(x => x !== id))
     setDeleteId(null)
-    reload()
     toast("Product removed.")
   }
 
   async function handleBulkDelete() {
     setDeletingBulk(true)
-    await new Promise(r => setTimeout(r, 800))
     const remaining = products.filter(p => !selectedIds.includes(p.id))
-    saveProducts(remaining)
+    await saveProducts(remaining)
     setSelectedIds([])
     setDeletingBulk(false)
     setBulkDeleteConfirm(false)
-    reload()
     toast("Selected products removed.")
   }
 
