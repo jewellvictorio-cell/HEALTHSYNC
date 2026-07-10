@@ -38,8 +38,8 @@ export async function POST(request: Request) {
   }
 
   const mailOptions = {
-    from: `"HealthSync Website" <${process.env.GMAIL_USER}>`,
-    to: process.env.GMAIL_USER,
+    from: `"HealthSync MSC" <${process.env.GMAIL_USER}>`,
+    to: 'renz.buban@healthsyncmedicalsolutionscorporation.com',
     subject,
     replyTo: email,
     text: `Name: ${full_name}\nEmail: ${email}\nPhone: ${phone}\nDepartment: ${department}\n\nMessage:\n${message}`,

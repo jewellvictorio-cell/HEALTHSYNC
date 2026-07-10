@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package, Stethoscope, Activity } from "lucide-react"
+import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package, Stethoscope, Activity, FlaskConical, Syringe, Wrench } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { PRODUCT_CATEGORIES, type Product } from "@/lib/store"
@@ -121,11 +121,10 @@ function EmptyGrid({ label }: { label: string }) {
 function ProductsContent() {
   const searchParams  = useSearchParams()
   const allProducts   = useProducts()
-  const [activeCategory, setActiveCategory] = React.useState(searchParams.get("category") || "All")
+  const [activeCategory, setActiveCategory] = React.useState("All")
   const [searchTerm,     setSearchTerm]     = React.useState(searchParams.get("search")   || "")
 
   React.useEffect(() => {
-    setActiveCategory(searchParams.get("category") || "All")
     setSearchTerm(searchParams.get("search") || "")
   }, [searchParams])
 
@@ -184,11 +183,40 @@ function ProductsContent() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse" />
       </section>
 
+
       <div className="container mx-auto px-4">
+        {/* ── Mobile: Search + Horizontal Category Chips ── */}
+        <div className="lg:hidden space-y-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="relative">
+            <Input
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-white border-2 focus:border-primary pr-10"
+            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shrink-0 ${
+                  activeCategory === cat
+                    ? "bg-primary text-white shadow-lg shadow-primary/20"
+                    : "bg-white text-muted-foreground border border-border hover:border-primary hover:text-primary"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* ── Sidebar ── */}
-          <div className="w-full lg:w-64 shrink-0 space-y-8 animate-in slide-in-from-left-8 duration-1000 fill-mode-both">
+          {/* ── Desktop Sidebar (hidden on mobile) ── */}
+          <div className="hidden lg:block w-64 shrink-0 space-y-8 animate-in slide-in-from-left-8 duration-1000 fill-mode-both">
             <div className="space-y-4">
               <h3 className="font-bold text-secondary flex items-center gap-2">
                 <Search className="h-4 w-4 text-primary" /> Search
@@ -240,50 +268,24 @@ function ProductsContent() {
           {/* ── Product Area ── */}
           <div className="flex-grow space-y-16 animate-in fade-in slide-in-from-right-8 duration-1000 fill-mode-both">
 
-            {/* ── "All" view: two featured sections stacked ── */}
+            {/* ── "All" view: all categories with uniform headers ── */}
             {showAll ? (
               <>
-                {/* Medical Equipment Section */}
-                <div>
-                  <SectionHeader icon={Stethoscope} title="Medical Equipment" count={medicalProducts.length} />
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {medicalProducts.length > 0
-                      ? medicalProducts.map((p, i) => <ProductCard key={p.id} product={p} index={i} onViewBrochure={handleViewBrochure} />)
-                      : <EmptyGrid label="Medical Equipment" />
-                    }
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-muted/20 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-widest">More Categories</span>
-                  </div>
-                </div>
-
-                {/* Biomedical Equipment Section */}
-                <div>
-                  <SectionHeader icon={Activity} title="Biomedical Equipment" count={biomedicalProducts.length} accent />
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {biomedicalProducts.length > 0
-                      ? biomedicalProducts.map((p, i) => <ProductCard key={p.id} product={p} index={i} onViewBrochure={handleViewBrochure} />)
-                      : <EmptyGrid label="Biomedical Equipment" />
-                    }
-                  </div>
-                </div>
-
-                {/* Remaining categories: Lab, Consumables, Accessories, Packaging */}
-                {["Laboratory Equipment", "Consumables | Medical Supplies", "Accessories | Medical Supplies", "Packaging Solutions"].map(cat => {
+                {PRODUCT_CATEGORIES.map((cat, catIdx) => {
                   const catProducts = allProducts.filter(p => p.category === cat)
                   if (catProducts.length === 0) return null
+                  const iconMap: Record<string, React.ElementType> = {
+                    "Medical Equipment": Stethoscope,
+                    "Biomedical Equipment": Activity,
+                    "Laboratory Equipment": FlaskConical,
+                    "Consumables | Medical Supplies": Syringe,
+                    "Accessories | Medical Supplies": Wrench,
+                    "Packaging Solutions": Package,
+                  }
+                  const CatIcon = iconMap[cat] || Package
                   return (
                     <div key={cat}>
-                      <div className="flex items-center gap-3 mb-5">
-                        <h2 className="text-lg font-headline font-bold text-secondary">{cat}</h2>
-                        <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">{catProducts.length}</span>
-                        <div className="flex-1 h-px bg-border" />
-                      </div>
+                      <SectionHeader icon={CatIcon} title={cat} count={catProducts.length} accent={catIdx % 2 !== 0} />
                       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
                         {catProducts.map((p, i) => <ProductCard key={p.id} product={p} index={i} onViewBrochure={handleViewBrochure} />)}
                       </div>

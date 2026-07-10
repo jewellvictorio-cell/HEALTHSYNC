@@ -1,30 +1,15 @@
-import { ShieldCheck, Award, Users, Package, Clock } from "lucide-react"
+import { Users, Clock } from "lucide-react"
 
 const trustItems = [
   {
-    icon: ShieldCheck,
-    value: "DOH",
-    label: "Accredited Supplier",
-  },
-  {
-    icon: Award,
-    value: "ISO 9001",
-    label: "Quality Certified",
-  },
-  {
     icon: Clock,
-    value: "15+ Years",
-    label: "Industry Experience",
+    value: "10+ Years",
+    label: "Years of Trust",
   },
   {
     icon: Users,
-    value: "500+",
-    label: "Satisfied Clients",
-  },
-  {
-    icon: Package,
-    value: "1,000+",
-    label: "Products in Catalog",
+    value: "100+",
+    label: "Trusted Clients",
   },
 ]
 

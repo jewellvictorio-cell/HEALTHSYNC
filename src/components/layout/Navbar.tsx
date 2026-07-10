@@ -160,15 +160,27 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile menu trigger */}
-        <div className="flex lg:hidden">
+        {/* Mobile menu trigger + admin icon */}
+        <div className="flex lg:hidden items-center gap-2">
+          <Link
+            href={adminLoggedIn ? "/admin" : "/admin/login"}
+            title={adminLoggedIn ? "Admin Dashboard" : "Admin Login"}
+            className={cn(
+              "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all hover:scale-110 active:scale-95",
+              adminLoggedIn
+                ? "border-primary bg-primary/5 text-primary hover:bg-primary/10"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
+            )}
+          >
+            <User className="h-5 w-5" />
+          </Link>
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-secondary hover:text-primary transition-colors"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-md text-secondary hover:text-primary transition-colors"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open main menu</span>
-            <Menu className="h-6 w-6" aria-hidden="true" />
+            <Menu className="h-7 w-7" aria-hidden="true" />
           </button>
         </div>
       </nav>
@@ -204,93 +216,32 @@ export function Navbar() {
         
         <div className="overflow-y-auto flex-1 px-4 py-6">
           <div className="space-y-2">
-            {/* Admin link in mobile menu */}
-            <Link
-              href={adminLoggedIn ? "/admin" : "/admin/login"}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors min-h-[44px]"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <User className="h-4 w-4" />
-              {adminLoggedIn ? "Admin Dashboard" : "Admin Login"}
-            </Link>
-            <div className="h-px bg-border my-1" />
-            {navigation.map((item) => {
-              if (item.name === "Products") {
-                return (
-                  <div key={item.name} className="space-y-1">
-                    <button
-                      onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
-                      className={cn(
-                        "w-full flex items-center justify-between rounded-lg px-4 py-3 text-base font-semibold transition-colors min-h-[44px]",
-                        pathname.startsWith("/products") || mobileProductsOpen
-                          ? "bg-primary/5 text-primary" 
-                          : "text-secondary hover:bg-muted"
-                      )}
-                    >
-                      {item.name}
-                      <ChevronDown className={cn("h-5 w-5 transition-transform duration-300", mobileProductsOpen && "rotate-180")} />
-                    </button>
-                    
-                    {/* Mobile Accordion Content */}
-                    <div 
-                      className={cn(
-                        "grid transition-all duration-300 ease-in-out",
-                        mobileProductsOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 mt-0"
-                      )}
-                    >
-                      <div className="overflow-hidden">
-                        <div className="px-4 py-4 space-y-6 bg-muted/30 rounded-lg border border-border/50">
-                          {productCategories.map((category) => (
-                            <div key={category.title} className="space-y-3">
-                              <Link href={`/products?category=${encodeURIComponent(category.categoryParam)}`} className="text-sm font-headline font-bold text-secondary hover:text-primary transition-colors block" onClick={() => setMobileMenuOpen(false)}>
-                                {category.title}
-                              </Link>
-                              <div className="flex flex-col space-y-1">
-                                {category.links.map(link => (
-                                  <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="block px-2 py-3 text-sm font-medium text-muted-foreground hover:text-primary min-h-[44px] flex items-center"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                  >
-                                    {link.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                          <div className="pt-2 border-t border-border/50">
-                            <Link 
-                              href="/products" 
-                              className="flex items-center gap-1 px-2 py-3 text-sm font-bold text-primary hover:underline min-h-[44px]"
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              View All Products <ArrowRight className="h-4 w-4" />
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
 
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center rounded-lg px-4 py-3 text-base font-semibold transition-colors min-h-[44px]",
-                    pathname === item.href 
-                      ? "bg-primary text-white" 
-                      : "text-secondary hover:bg-muted"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              )
-            })}
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center rounded-lg px-4 py-3 text-base font-semibold transition-colors min-h-[44px]",
+                  (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href))
+                    ? "bg-primary text-white" 
+                    : "text-secondary hover:bg-muted"
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Get a Quote CTA */}
+          <div className="px-4 pb-6 pt-2 mt-auto shrink-0 border-t border-border">
+            <Button className="w-full h-12 text-base font-semibold gap-2" asChild>
+              <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
+                <MessageSquare className="h-5 w-5" />
+                Get a Quote
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

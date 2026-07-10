@@ -109,8 +109,8 @@ export default function Home() {
       <section className="py-24 bg-white overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="flex flex-col justify-between animate-in slide-in-from-left-12 duration-1000 ease-out fill-mode-both">
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl group/slide">
+            <div className="relative lg:h-[520px] xl:h-[580px] flex flex-col justify-between animate-in slide-in-from-left-12 duration-1000 ease-out fill-mode-both">
+              <div className="relative aspect-[4/3] lg:aspect-auto h-full rounded-2xl overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02] group/slide">
                 {slides.map((slide, idx) => (
                   <div
                     key={slide.id}
@@ -203,12 +203,12 @@ export default function Home() {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-6 pt-2">
                 <div className="space-y-1 p-4 rounded-xl bg-muted border border-border">
-                  <h4 className="text-4xl font-headline font-bold text-primary">15+</h4>
+                  <h4 className="text-4xl font-headline font-bold text-primary">10+</h4>
                   <p className="text-xs font-semibold text-secondary uppercase tracking-wider">Years Experience</p>
                 </div>
                 <div className="space-y-1 p-4 rounded-xl bg-muted border border-border">
-                  <h4 className="text-4xl font-headline font-bold text-primary">1k+</h4>
-                  <p className="text-xs font-semibold text-secondary uppercase tracking-wider">Products Catalog</p>
+                  <h4 className="text-4xl font-headline font-bold text-primary">100+</h4>
+                  <p className="text-xs font-semibold text-secondary uppercase tracking-wider">Satisfied Clients</p>
                 </div>
               </div>
 

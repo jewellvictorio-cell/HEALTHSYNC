@@ -4,6 +4,7 @@ import './globals.css';
 import {Navbar} from '@/components/layout/Navbar';
 import {Footer} from '@/components/layout/Footer';
 import {Toaster} from '@/components/ui/toaster';
+import {BackToTop} from '@/components/layout/BackToTop';
 import AdminLayoutWrapper from '@/components/layout/AdminLayoutWrapper';
 
 export const metadata: Metadata = {
@@ -23,12 +24,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased flex flex-col min-h-screen">
+      <body className="font-body antialiased flex flex-col min-h-screen overflow-x-hidden">
         <AdminLayoutWrapper
           publicSlot={<><Navbar /><main className="flex-grow">{children}</main><Footer /></>}
           adminSlot={<main className="flex-grow">{children}</main>}
         />
         <Toaster />
+        <BackToTop />
       </body>
     </html>
   );

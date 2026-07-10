@@ -184,7 +184,6 @@ function ContactForm() {
                         <SelectItem value="quotation">Quotation</SelectItem>
                         <SelectItem value="sales">Products Inquiry</SelectItem>
                         <SelectItem value="offers">Offers</SelectItem>
-                        <SelectItem value="hr">Careers</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

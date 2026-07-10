@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { login, isAdmin } from "@/lib/auth"
+import { login, isAdmin, resetPassword } from "@/lib/auth"
 import { Eye, EyeOff, AlertCircle } from "lucide-react"
 import { Logo } from "@/components/layout/Logo"
 
@@ -16,6 +16,9 @@ export default function AdminLoginPage() {
   const [error,      setError]      = React.useState("")
   const [loading,    setLoading]    = React.useState(false)
   const [forgotOpen, setForgotOpen] = React.useState(false)
+  const [forgotEmail, setForgotEmail] = React.useState("")
+  const [forgotStatus, setForgotStatus] = React.useState<{ type: 'idle' | 'success' | 'error', message: string }>({ type: 'idle', message: '' })
+  const [forgotLoading, setForgotLoading] = React.useState(false)
 
   React.useEffect(() => {
     if (isAdmin()) router.replace("/admin")
@@ -43,6 +46,23 @@ export default function AdminLoginPage() {
     }
   }
 
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setForgotStatus({ type: 'idle', message: '' })
+    if (!forgotEmail) {
+      setForgotStatus({ type: 'error', message: 'Please enter your email address.' })
+      return
+    }
+    setForgotLoading(true)
+    const success = await resetPassword(forgotEmail)
+    setForgotLoading(false)
+    if (success) {
+      setForgotStatus({ type: 'success', message: 'A password reset link has been sent to your email.' })
+      setForgotEmail("") // clear input
+    } else {
+      setForgotStatus({ type: 'error', message: 'Failed to send reset link. Please check the email and try again.' })
+    }
+  }
   return (
     <div className="min-h-screen flex" style={{ background: "hsl(180,20%,98%)" }}>
 
@@ -277,29 +297,62 @@ export default function AdminLoginPage() {
                   </button>
                 </div>
                 <p className="text-sm mb-5" style={{ color: "hsl(240,18%,50%)" }}>
-                  To reset your admin password, please contact your system administrator or reach out via your registered corporate email.
+                  Enter your admin email address and we'll send you a link to reset your password.
                 </p>
-                <div
-                  className="flex items-start gap-3 rounded-xl px-4 py-3 mb-5"
-                  style={{ background: "hsl(180,58%,27%,0.07)", border: "1px solid hsl(180,58%,27%,0.18)" }}
-                >
-                  <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 16 16" style={{ color: "hsl(180,58%,27%)" }}>
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M8 7v4M8 5.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                  <p className="text-xs leading-relaxed" style={{ color: "hsl(180,58%,27%)" }}>
-                    Admin credentials are managed internally. Contact <strong>healthsync.med@gmail.com</strong> for assistance.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setForgotOpen(false)}
-                  className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
-                  style={{ background: "hsl(180,58%,27%)", color: "#fff" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "hsl(180,58%,22%)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "hsl(180,58%,27%)")}
-                >
-                  Got it
-                </button>
+
+                {forgotStatus.message && (
+                  <div
+                    className={`flex items-start gap-3 rounded-xl px-4 py-3 mb-5 text-sm animate-in fade-in zoom-in-95`}
+                    style={{ 
+                      background: forgotStatus.type === 'success' ? "hsl(142,71%,45%,0.1)" : "hsl(0,84%,60%,0.08)", 
+                      border: `1px solid ${forgotStatus.type === 'success' ? "hsl(142,71%,45%,0.3)" : "hsl(0,84%,60%,0.25)"}`, 
+                      color: forgotStatus.type === 'success' ? "hsl(142,76%,36%)" : "hsl(0,72%,48%)" 
+                    }}
+                  >
+                    {forgotStatus.type === 'success' ? (
+                      <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.333 4L6 11.333 2.667 8" />
+                      </svg>
+                    ) : (
+                      <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    )}
+                    <p className="leading-relaxed">{forgotStatus.message}</p>
+                  </div>
+                )}
+
+                <form onSubmit={handleResetPassword}>
+                  <div className="space-y-1.5 mb-5">
+                    <label className="block text-sm font-semibold" style={{ color: "hsl(240,67%,18%)" }}>Email Address</label>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={e => { setForgotEmail(e.target.value); setForgotStatus({ type: 'idle', message: '' }) }}
+                      placeholder="admin@healthsync.com"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all font-body"
+                      style={{ background: "hsl(180,12%,95%)", border: "1.5px solid hsl(180,12%,86%)", color: "hsl(240,67%,10%)" }}
+                      onFocus={e => { e.currentTarget.style.borderColor = "hsl(180,58%,27%)"; e.currentTarget.style.boxShadow = "0 0 0 3px hsl(180,58%,27%,0.12)" }}
+                      onBlur={e => { e.currentTarget.style.borderColor = "hsl(180,12%,86%)"; e.currentTarget.style.boxShadow = "none" }}
+                    />
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2"
+                    style={{ background: "hsl(180,58%,27%)", color: "#fff", opacity: forgotLoading ? 0.8 : 1 }}
+                    onMouseEnter={e => { if (!forgotLoading) e.currentTarget.style.background = "hsl(180,58%,22%)" }}
+                    onMouseLeave={e => { if (!forgotLoading) e.currentTarget.style.background = "hsl(180,58%,27%)" }}
+                  >
+                    {forgotLoading ? (
+                      <>
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Reset Link"
+                    )}
+                  </button>
+                </form>
               </div>
             </div>
           )}

@@ -5,9 +5,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { auth } from "./firebase"
-import { signInWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth"
+import { signInWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail } from "firebase/auth"
 
 const SESSION_KEY = "hs_admin_session"
+
+export async function resetPassword(email: string): Promise<boolean> {
+  try {
+    await sendPasswordResetEmail(auth, email)
+    return true
+  } catch (error) {
+    console.error("Password reset failed:", error)
+    return false
+  }
+}
 
 /**
  * Signs in with Firebase Auth and stores a local session flag.

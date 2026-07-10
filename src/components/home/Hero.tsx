@@ -4,12 +4,10 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShieldCheck, BadgeCheck, Truck, Phone, ChevronLeft, ChevronRight } from "lucide-react"
+import { ShieldCheck, Truck, Phone, ChevronLeft, ChevronRight } from "lucide-react"
 import { useSlideshow } from "@/lib/useStore"
 
 const trustBadges = [
-  { icon: ShieldCheck, label: "DOH Accredited" },
-  { icon: BadgeCheck, label: "ISO 9001:2015" },
   { icon: Truck, label: "Nationwide Delivery" },
 ]
 
@@ -156,7 +154,7 @@ export function Hero() {
                   <ShieldCheck className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-secondary">500+ Clients</p>
+                  <p className="text-sm font-bold text-secondary">100+ Clients</p>
                   <p className="text-xs text-muted-foreground">Trusted Nationwide</p>
                 </div>
               </div>
@@ -164,7 +162,7 @@ export function Hero() {
 
             {/* Floating experience card */}
             <div className="absolute -top-5 -right-5 bg-primary p-4 rounded-xl shadow-xl hidden xl:block z-30 animate-in slide-in-from-top-12 duration-1000 delay-900 fill-mode-both">
-              <p className="text-2xl font-headline font-extrabold text-white leading-none">15+</p>
+              <p className="text-2xl font-headline font-extrabold text-white leading-none">10+</p>
               <p className="text-[11px] font-semibold text-white/80 uppercase tracking-wider mt-0.5">Years of Trust</p>
             </div>
           </div>
