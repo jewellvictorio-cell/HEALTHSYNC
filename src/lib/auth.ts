@@ -1,35 +1,49 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  Admin Auth Helpers
-//  Uses localStorage so login persists across browser restarts and server
-//  restarts. The session is only cleared when the admin explicitly logs out.
+//  Uses Firebase Authentication for Firestore write access, plus localStorage
+//  so the admin session flag persists for client-side route guards.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { auth } from "./firebase"
+import { signInWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth"
 
 const SESSION_KEY = "hs_admin_session"
 
-// Credentials — in production these should come from env vars.
-// Set NEXT_PUBLIC_ADMIN_EMAIL and NEXT_PUBLIC_ADMIN_PASSWORD in .env.local
-const ADMIN_EMAIL    = process.env.NEXT_PUBLIC_ADMIN_EMAIL    ?? "admin@healthsync.com"
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "HealthSync@2025"
-
-export function login(email: string, password: string): boolean {
-  if (email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+/**
+ * Signs in with Firebase Auth and stores a local session flag.
+ * Returns true on success, false on invalid credentials.
+ */
+export async function login(email: string, password: string): Promise<boolean> {
+  try {
+    await signInWithEmailAndPassword(auth, email, password)
     if (typeof window !== "undefined") {
-      // Store in localStorage so session survives browser/server restarts
       localStorage.setItem(SESSION_KEY, btoa(`${email}:${Date.now()}`))
     }
     return true
+  } catch (error) {
+    console.error("Login failed:", error)
+    return false
   }
-  return false
 }
 
-export function logout(): void {
+/**
+ * Signs out of Firebase Auth and clears local session.
+ */
+export async function logout(): Promise<void> {
+  try {
+    await firebaseSignOut(auth)
+  } catch (e) {
+    console.error("Firebase sign-out error:", e)
+  }
   if (typeof window !== "undefined") {
     localStorage.removeItem(SESSION_KEY)
-    // Also clear remembered email on explicit logout
     localStorage.removeItem("hs_remember_email")
   }
 }
 
+/**
+ * Quick synchronous check used by route guards.
+ */
 export function isAdmin(): boolean {
   if (typeof window === "undefined") return false
   return !!localStorage.getItem(SESSION_KEY)

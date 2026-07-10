@@ -29,8 +29,8 @@ export default function AdminLoginPage() {
     setError("")
     if (!email || !password) { setError("Please enter your email and password."); return }
     setLoading(true)
-    await new Promise(r => setTimeout(r, 600))
-    if (login(email, password)) {
+    const success = await login(email, password)
+    if (success) {
       if (rememberMe) {
         localStorage.setItem("hs_remember_email", email)
       } else {

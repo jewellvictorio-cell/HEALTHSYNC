@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { getFooterSettings, saveFooterSettings, type FooterSettings } from "@/lib/store"
+import { saveFooterSettings, type FooterSettings } from "@/lib/store"
+import { useFooterSettings } from "@/lib/useStore"
 import { useToast } from "@/components/admin/AdminToast"
 import { Check, Loader2, Plus, X, Phone, Mail, MapPin } from "lucide-react"
 
@@ -91,14 +92,15 @@ export default function AdminFooterPage() {
   const [saving, setSaving] = React.useState(false)
   const { toast } = useToast()
 
+  const s = useFooterSettings()
+  
   React.useEffect(() => {
-    const s = getFooterSettings()
     setForm({
       address: s.address,
       phones: s.phones?.length ? s.phones : [""],
       emails: s.emails?.length ? s.emails : [""],
     })
-  }, [])
+  }, [s])
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -109,10 +111,10 @@ export default function AdminFooterPage() {
 
     setSaving(true)
     await new Promise(r => setTimeout(r, 600))
-    const success = saveFooterSettings({ ...form, phones: cleanPhones, emails: cleanEmails })
+    await saveFooterSettings({ ...form, phones: cleanPhones, emails: cleanEmails })
     setSaving(false)
 
-    if (success) toast("Footer details successfully saved!")
+    toast("Footer details successfully saved!")
   }
 
   const isValid =

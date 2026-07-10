@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { getJobs, type Job } from "@/lib/store"
+import { type Job } from "@/lib/store"
 import { useJobs } from "@/lib/useStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Briefcase, MapPin, Clock, Upload, X, Calendar, ChevronRight, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Briefcase, MapPin, Clock, Upload, X, Calendar, ChevronRight, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 
 
 function formatRelativeDate(d: string) {
@@ -93,6 +93,7 @@ export default function CareersPage() {
   const [countryCode,  setCountryCode]  = React.useState("+63")
   const [phoneNumber,  setPhoneNumber]  = React.useState("")
   const [countryOpen,  setCountryOpen]  = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const COUNTRIES = [
     { code: "+63",  flag: "🇵🇭", name: "Philippines" },
@@ -129,20 +130,72 @@ export default function CareersPage() {
 
 
 
-  function handleApplySubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!formData.name || !formData.email || !formData.phone || (!formData.position && !selectedJob)) {
-      setErrorMsg("PLEASE FILL OUT ALL REQUIRED FIELDS.")
-      setSuccessMsg("")
-      return
+  const [resumeFile, setResumeFile] = React.useState<File | null>(null);
+  const [resumeBase64, setResumeBase64] = React.useState<string>("");
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (file) {
+      setResumeFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        // Strip data URL prefix
+        const base64 = result.split(",")[1] || result;
+        setResumeBase64(base64);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setResumeFile(null);
+      setResumeBase64("");
     }
-    setErrorMsg("")
-    setSuccessMsg("APPLICATION SUBMITTED SUCCESSFULLY!")
-    setFormData({ name: "", email: "", phone: "", position: "", message: "" })
-    setPhoneNumber("")
-    setCountryCode("+63")
-    setTimeout(() => setSuccessMsg(""), 5000)
+  };
+const handleApplySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const jobSelectedId = formData.position || (selectedJob ? selectedJob.id : "");
+  if (!formData.name || !formData.email || !formData.phone || !jobSelectedId) {
+    setErrorMsg("PLEASE FILL OUT ALL REQUIRED FIELDS.");
+    setSuccessMsg("");
+    return;
   }
+
+  const jobObj = jobs.find(j => j.id === jobSelectedId);
+  const positionTitle = jobObj ? jobObj.title : jobSelectedId;
+
+  setErrorMsg("");
+  setIsSubmitting(true);
+  try {
+    const response = await fetch("/api/careers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        full_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        department: "careers",
+        position: positionTitle,
+        message: formData.message,
+        resumeBase64: resumeBase64,
+      }),
+    });
+    const result = await response.json();
+    if (result.success) {
+      setSuccessMsg("APPLICATION SUBMITTED SUCCESSFULLY!");
+      setFormData({ name: "", email: "", phone: "", position: "", message: "" });
+      setPhoneNumber("");
+      setCountryCode("+63");
+      setResumeFile(null);
+      setResumeBase64("");
+    } else {
+      setErrorMsg(result.message || "Failed to submit.");
+    }
+  } catch (error) {
+    setErrorMsg("Failed to submit.");
+    console.error(error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
 
 
@@ -299,18 +352,34 @@ export default function CareersPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="resume">Upload CV / Resume (PDF)</Label>
-                      <div className="border-2 border-dashed rounded-xl p-8 text-center bg-muted/30 hover:bg-muted/50 transition-all cursor-pointer group hover:border-primary/50">
+                      <div className="border-2 border-dashed rounded-xl p-8 text-center bg-muted/30 hover:bg-muted/50 transition-all cursor-pointer group hover:border-primary/50" onClick={() => document.getElementById('resume')?.click()}>
                         <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2 group-hover:text-primary transition-colors" />
                         <p className="text-xs text-muted-foreground group-hover:text-secondary">Click or drag and drop your file here</p>
-                        <input type="file" id="resume" className="hidden" accept=".pdf,.doc,.docx" />
+                        <input type="file" id="resume" className="hidden" accept=".pdf,.doc,.docx" onChange={handleResumeChange} />
                       </div>
+                      {resumeFile && (
+                        <p className="mt-2 text-sm text-primary flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4" />
+                          {resumeFile.name} attached
+                          <button type="button" onClick={() => { setResumeFile(null); setResumeBase64(""); }} className="ml-2 text-red-500 hover:text-red-700">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="career-msg">Message (Optional)</Label>
                       <Textarea id="career-msg" value={formData.message} onChange={e => setFormData(f => ({...f, message: e.target.value}))} placeholder="Tell us about yourself..." className="focus:border-primary border-2 min-h-[100px]" />
                     </div>
-                    <Button type="submit" className="w-full h-12 font-bold uppercase tracking-widest mt-4 transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-                      Submit Application
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-bold uppercase tracking-widest mt-4 transition-transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Submit Application"
+                      )}
                     </Button>
                   </form>
                 </CardContent>

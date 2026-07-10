@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Phone, Mail, MapPin, Clock, Send, AlertCircle, CheckCircle, X } from "lucide-react"
-import { useFooterSettings } from "@/lib/useStore"
+import { useFooterSettings, useProducts } from "@/lib/useStore";
 import Image from "next/image"
 
 function ContactForm() {
@@ -29,23 +29,34 @@ function ContactForm() {
   const [qrZoomed, setQrZoomed] = useState(false)
   const footerSettings = useFooterSettings()
   const searchParams = useSearchParams()
+  const allProducts = useProducts()
 
   useEffect(() => {
-    const inquiry = searchParams.get("inquiry")
+    const inquiry = searchParams.get("inquiry");
     if (inquiry === "rent-to-own") {
       setFormData(prev => ({
         ...prev,
-        department: "sales",
+        department: "offers",
         message: "I am interested in the Rent-To-Own program. Please provide more details on terms and available equipment."
-      }))
+      }));
     } else if (inquiry === "payment-plan") {
       setFormData(prev => ({
         ...prev,
-        department: "sales",
+        department: "offers",
         message: "I would like to inquire about long-term payment plans for medical equipment procurement."
-      }))
+      }));
+    } else if (inquiry === "product") {
+      const id = searchParams.get("id");
+      const product = allProducts.find(p => p.id === id);
+      if (product) {
+        setFormData(prev => ({
+          ...prev,
+          department: "quotation",
+          message: `I would like to request a quote for the product "${product.name}".\nDetails: ${product.description}`
+        }));
+      }
     }
-  }, [searchParams])
+  }, [searchParams, allProducts]);
 
   const COUNTRIES = [
     { code: "+63",  flag: "🇵🇭", name: "Philippines" },
@@ -94,22 +105,19 @@ function ContactForm() {
     setSuccessMsg("SENDING...")
 
     try {
-      // Setup payload for send.php
-      const payload = new URLSearchParams()
-      payload.append('full_name', formData.name)
-      payload.append('email', formData.email)
-      payload.append('phone', formData.phone)
-      payload.append('department', formData.department)
-      payload.append('message', formData.message)
-      
-      // Post to PHP Mailer script (works locally on XAMPP if routed, or gracefully falls back)
-      const res = await fetch('/php-mailer/send.php', {
+      const payload = {
+        full_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        department: formData.department,
+        message: formData.message,
+      };
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: payload.toString()
-      })
-      
-      const data = await res.json()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
       
       if (data.success) {
         setErrorMsg("")

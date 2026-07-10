@@ -2,22 +2,26 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { getTeam, getProducts, getJobs, getClients } from "@/lib/store"
+import { useTeam, useProducts, useJobs, useClients } from "@/lib/useStore"
 import { Users, Package, Briefcase, Building2, ArrowRight, Activity, Layout } from "lucide-react"
 
 export default function AdminDashboard() {
+  const teamData = useTeam()
+  const productsData = useProducts()
+  const jobsData = useJobs()
+  const clientsData = useClients()
+
   const [stats, setStats] = React.useState({ team: 0, products: 0, jobs: 0, gov: 0, priv: 0 })
 
   React.useEffect(() => {
-    const clients = getClients()
     setStats({
-      team:     getTeam().length,
-      products: getProducts().length,
-      jobs:     getJobs().length,
-      gov:      clients.filter(c => c.type === "government").length,
-      priv:     clients.filter(c => c.type === "private").length,
+      team:     teamData.length,
+      products: productsData.length,
+      jobs:     jobsData.length,
+      gov:      clientsData.filter(c => c.type === "government").length,
+      priv:     clientsData.filter(c => c.type === "private").length,
     })
-  }, [])
+  }, [teamData, productsData, jobsData, clientsData])
 
   const cards = [
     { label: "Team Members",       value: stats.team,             icon: Users,      href: "/admin/team",     bg: "bg-primary",   shadow: "shadow-primary/20" },

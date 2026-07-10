@@ -58,7 +58,7 @@ function ProductCard({ product, index, onViewBrochure }: {
         <CardDescription className="line-clamp-2 text-xs leading-relaxed min-h-[32px]">{product.description}</CardDescription>
       </CardHeader>
       <CardFooter className="p-5 pt-3 mt-auto border-t bg-muted/5 grid grid-cols-2 gap-2">
-        {product.brochure ? (
+        {product.brochure && (product.brochure.startsWith("data:") || product.brochure.startsWith("http") || product.brochure.startsWith("/")) ? (
           <Button onClick={(e) => onViewBrochure(e, product.brochure!)} variant="outline" className="w-full gap-1.5 border-2 hover:bg-primary hover:text-white hover:border-primary font-bold text-[10px] uppercase tracking-wider h-10 transition-all hover:scale-[1.02] active:scale-95 shadow-sm p-0">
             <span className="flex items-center justify-center w-full h-full gap-1.5 cursor-pointer">
               <Eye className="h-3.5 w-3.5" /> View Brochure
@@ -70,7 +70,8 @@ function ProductCard({ product, index, onViewBrochure }: {
           </Button>
         )}
         <Button asChild className="w-full gap-1.5 font-bold text-[10px] uppercase tracking-wider h-10 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/10">
-          <Link href="/contact">
+          <Link href={`/contact?inquiry=product&id=${product.id}`}>
+
             <FileText className="h-3.5 w-3.5" /> Quote
           </Link>
         </Button>
@@ -128,19 +129,30 @@ function ProductsContent() {
     setSearchTerm(searchParams.get("search") || "")
   }, [searchParams])
 
-  function handleViewBrochure(e: React.MouseEvent, base64: string) {
+  function handleViewBrochure(e: React.MouseEvent, brochure: string) {
     e.preventDefault()
     try {
-      const arr = base64.split(",")
-      const mime = arr[0].match(/:(.*?);/)?.[1] || "application/pdf"
-      const bstr = atob(arr[1])
-      let n = bstr.length
-      const u8arr = new Uint8Array(n)
-      while (n--) u8arr[n] = bstr.charCodeAt(n)
-      const blob = new Blob([u8arr], { type: mime })
-      const url  = URL.createObjectURL(blob)
-      window.open(url, "_blank")
-      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      // If it's already a URL (http/https or relative path), open directly
+      if (brochure.startsWith("http://") || brochure.startsWith("https://") || brochure.startsWith("/")) {
+        window.open(brochure, "_blank")
+        return
+      }
+      // If it's a base64 data URL, decode and open as blob
+      if (brochure.startsWith("data:")) {
+        const arr = brochure.split(",")
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "application/pdf"
+        const bstr = atob(arr[1])
+        let n = bstr.length
+        const u8arr = new Uint8Array(n)
+        while (n--) u8arr[n] = bstr.charCodeAt(n)
+        const blob = new Blob([u8arr], { type: mime })
+        const url  = URL.createObjectURL(blob)
+        window.open(url, "_blank")
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+        return
+      }
+      // Unknown format
+      alert("Brochure format not supported.")
     } catch {
       alert("Failed to open brochure.")
     }
