@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Facebook, Mail, MapPin, Phone } from "lucide-react"
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react"
 import { Logo } from "./Logo"
 import { useFooterSettings } from "@/lib/useStore"
 
@@ -26,6 +26,9 @@ export function Footer() {
             <div className="flex gap-4">
               <Link href="https://www.facebook.com/people/Healthsync-Medical-Solutions-Corporation/61573091682697/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
                 <Facebook className="h-5 w-5" />
+              </Link>
+              <Link href="https://www.instagram.com/healthsyncmed?igsh=MTljeDE4bTI5cTc3ZQ==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors text-white">
+                <Instagram className="h-5 w-5" />
               </Link>
             </div>
           </div>
