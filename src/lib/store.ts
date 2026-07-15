@@ -54,10 +54,7 @@ const SEED_PRODUCTS: Product[] = [
   ...["Centrifuge","Freezer","Incubator","Lab Oven","Lab Refrigerator","Microscope","Pipette","pH Meter","Thermohygrometer","Water Bath"].map((name,i)=>({ id:`le-${i}`, name, category:"Laboratory Equipment", description:`Precision ${name} for clinical laboratories and research institutions.`, image:`https://picsum.photos/seed/le${i}/400/300` })),
   ...["Anesthesia Breathing Circuit","Bacterial Filter","BP Cuff, Dual Tube (Disposable)","BP Cuff, Single Tube (Disposable)","Bubble Humidifier","Closed Suction Catheter","EtCO₂ Water Trap","FHME","Flex Tube","Full Face Mask (CPAP, BiPAP)","Gas Sampling Line","High Flow Consumables","Humidification Chamber","Incentive Spirometer","Nasal Cannula","NIV Face Mask","Peak Flowmeter","Ventilator Breathing Circuit, Dual Limb","Ventilator Breathing Circuit, Single Limb"].map((name,i)=>({ id:`ms-c-${i}`, name, category:"Consumables | Medical Supplies", description:`Essential ${name} for respiratory therapy and patient care.`, image:`https://picsum.photos/seed/msc${i}/400/300` })),
   ...["BP Bulb","BP Cuff, Dual Tube (Reusable)","BP Cuff, Dual Tube (Disposable)","ECG Leads (3, 5, 12 Leads)","Flow Sensor, Ventilator","High-Pressure Regulator, Compressed Air","High-Pressure Regulator, Oxygen","NIBP Hose, Coiled","NIBP Hose, Dual Tube","NIBP Hose, Single Tube","Oxygen Flowmeter, 15 LPM","Oxygen Flowmeter, 70 LPM","Oxygen/Air Blender","SpO₂ Sensor","SpO₂ Trunk Cable","Temperature Probe"].map((name,i)=>({ id:`ms-a-${i}`, name, category:"Accessories | Medical Supplies", description:`Durable ${name} compatible with various medical monitor systems.`, image:`https://picsum.photos/seed/msa${i}/400/300` })),
-  { id:"pkg-1", name:"Standard Packaging",       category:"Packaging Solutions", description:"Secure and reliable packaging for everyday products.", image:"https://picsum.photos/seed/pkg1/400/300" },
-  { id:"pkg-2", name:"Foam Protection Packaging", category:"Packaging Solutions", description:"Enhanced protection with high-quality foam for delicate equipment.", image:"https://picsum.photos/seed/pkg2/400/300" },
-  { id:"pkg-3", name:"Wooden Crate Packaging",    category:"Packaging Solutions", description:"Heavy-duty wooden crates for maximum safety of valuable equipment.", image:"https://picsum.photos/seed/pkg3/400/300" },
-  { id:"pkg-4", name:"Export Grade Packaging",    category:"Packaging Solutions", description:"ISPM-15 compliant packaging for safe and secure international shipping.", image:"https://picsum.photos/seed/pkg4/400/300" },
+
 ]
 
 const SEED_JOBS: Job[] = [
@@ -151,7 +148,6 @@ export const PRODUCT_CATEGORIES = [
   "Laboratory Equipment",
   "Consumables | Medical Supplies",
   "Accessories | Medical Supplies",
-  "Packaging Solutions",
 ]
 
 export async function ensureSeeded() {

@@ -1,7 +1,7 @@
 // src/app/api/contact/route.ts
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { generateQuoteEmailTemplate, generateProductInquiryTemplate, generateOfferEmailTemplate } from './emailTemplate';
+import { generateQuoteEmailTemplate, generateProductInquiryTemplate, generateOfferEmailTemplate, generateTechnicalSupportEmailTemplate, generateConsultancyEmailTemplate } from './emailTemplate';
 
 export async function POST(request: Request) {
   const { full_name, email, phone, department, message } = await request.json();
@@ -33,6 +33,12 @@ export async function POST(request: Request) {
   } else if (department === 'offers') {
     subject = `New Offer Submission`;
     html = generateOfferEmailTemplate({ full_name, email, phone, offer_details: 'See Message', message });
+  } else if (department === 'technical-support') {
+    subject = `Technical Support Inquiry`;
+    html = generateTechnicalSupportEmailTemplate({ full_name, email, phone, message });
+  } else if (department === 'consultancy') {
+    subject = `Consultancy Inquiry`;
+    html = generateConsultancyEmailTemplate({ full_name, email, phone, message });
   } else {
     html = generateQuoteEmailTemplate({ full_name, email, phone, department, message });
   }

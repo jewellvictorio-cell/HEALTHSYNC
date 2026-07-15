@@ -9,7 +9,6 @@ import {
   Activity,
   Stethoscope,
   Microscope,
-  Package,
   Settings,
   Users,
   ArrowRight,
@@ -36,7 +35,7 @@ const services = [
     link: "/products?category=Biomedical Equipment",
   },
   {
-    title: "Laboratory Solutions",
+    title: "Laboratory Equipment",
     desc: "Advanced diagnostic equipment and precision laboratory instruments.",
     icon: Microscope,
     link: "/products?category=Laboratory Equipment",
@@ -48,22 +47,18 @@ const services = [
     link: "/products?category=Consumables | Medical Supplies",
   },
   {
-    title: "Packaging Solutions",
-    desc: "Specialized sterilization and protective medical packaging.",
-    icon: Package,
-    link: "/products?category=Packaging Solutions",
-  },
-  {
     title: "Technical Support",
     desc: "Professional maintenance and biomedical technical services.",
     icon: Settings,
-    link: "/contact?inquiry=Technical Support",
+    link: "/contact?inquiry=technical-support",
+    cta: "Inquire Now",
   },
   {
     title: "Consultancy",
     desc: "Healthcare management and institution development advisory.",
     icon: Users,
-    link: "/contact?inquiry=Consultancy",
+    link: "/contact?inquiry=consultancy",
+    cta: "Inquire Now",
   },
 ]
 
@@ -262,7 +257,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground mb-5 leading-relaxed line-clamp-2">{service.desc}</p>
                   <Button variant="link" className="px-0 h-auto text-primary font-bold text-sm group/btn" asChild>
                     <Link href={service.link} className="flex items-center gap-1">
-                      View Catalog{" "}
+                      {service.cta || "View Catalog"}{" "}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                     </Link>
                   </Button>

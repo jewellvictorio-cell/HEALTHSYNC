@@ -61,7 +61,6 @@ export function Footer() {
                 { label: 'Biomedical Equipment', href: '/products?category=Biomedical+Equipment' },
                 { label: 'Laboratory Equipment', href: '/products?category=Laboratory+Equipment' },
                 { label: 'Medical Supplies', href: '/products?category=Medical+Supplies' },
-                { label: 'Packaging Solutions', href: '/products?category=Packaging+Solutions' },
                 { label: 'Technical Support', href: '/contact?inquiry=sales#quote-form' },
               ].map((item) => (
                 <li key={item.label}>

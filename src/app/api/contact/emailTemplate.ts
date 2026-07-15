@@ -218,3 +218,97 @@ export function generateOfferEmailTemplate(data: {
 "</body>" +
 "</html>";
 }
+
+/**
+ * Generates an HTML email template for a technical support inquiry.
+ */
+export function generateTechnicalSupportEmailTemplate(data: {
+  full_name: string;
+  email: string;
+  phone: string;
+  message: string;
+}) {
+  const { full_name, email, phone, message } = data;
+  const title = "Technical Support Inquiry";
+  const year = new Date().getFullYear();
+  return "<!DOCTYPE html>" +
+"<html lang=\"en\">" +
+"<head>" +
+"  <meta charset=\"UTF-8\" />" +
+"  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />" +
+"  <title>" + title + "</title>" +
+"  <style>" +
+"    body { font-family: Arial, Helvetica, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; }" +
+"    .container { max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }" +
+"    .header h1 { margin: 0; font-size: 20px; letter-spacing: 0.5px; }" +
+"    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }" +
+"    .content { padding: 24px; color: #333333; line-height: 1.6; }" +
+"    .content h2 { margin-top: 0; color: #0d7377; font-size: 18px; border-bottom: 2px solid #e8eef3; padding-bottom: 8px; }" +
+"    .field-row { padding: 8px 0; border-bottom: 1px solid #f0f3f5; }" +
+"    .field-label { font-weight: 600; color: #0d7377; }" +
+"    .message-box { background: #f9fafb; border-left: 4px solid #0d7377; padding: 12px 16px; margin-top: 16px; border-radius: 0 4px 4px 0; }" +
+"  </style>" +
+"</head>" +
+"<body>" +
+"  <div class=\"container\">" +
+"    " + emailHeader("Technical Support", "linear-gradient(135deg, #0d7377, #14b8a6)") +
+"    <div class=\"content\">" +
+"      <h2>" + title + "</h2>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Name:</span> " + full_name + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Email:</span> " + email + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Phone:</span> " + phone + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Department:</span> Technical Support</div>" +
+"      <div class=\"message-box\"><p>" + message.replace(/\n/g, "<br/>") + "</p></div>" +
+"    </div>" +
+"    " + emailFooter(year) +
+"  </div>" +
+"</body>" +
+"</html>";
+}
+
+/**
+ * Generates an HTML email template for a consultancy inquiry.
+ */
+export function generateConsultancyEmailTemplate(data: {
+  full_name: string;
+  email: string;
+  phone: string;
+  message: string;
+}) {
+  const { full_name, email, phone, message } = data;
+  const title = "Consultancy Inquiry";
+  const year = new Date().getFullYear();
+  return "<!DOCTYPE html>" +
+"<html lang=\"en\">" +
+"<head>" +
+"  <meta charset=\"UTF-8\" />" +
+"  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />" +
+"  <title>" + title + "</title>" +
+"  <style>" +
+"    body { font-family: Arial, Helvetica, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; }" +
+"    .container { max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }" +
+"    .header h1 { margin: 0; font-size: 20px; letter-spacing: 0.5px; }" +
+"    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }" +
+"    .content { padding: 24px; color: #333333; line-height: 1.6; }" +
+"    .content h2 { margin-top: 0; color: #4338ca; font-size: 18px; border-bottom: 2px solid #e8eef3; padding-bottom: 8px; }" +
+"    .field-row { padding: 8px 0; border-bottom: 1px solid #f0f3f5; }" +
+"    .field-label { font-weight: 600; color: #4338ca; }" +
+"    .message-box { background: #f9fafb; border-left: 4px solid #4338ca; padding: 12px 16px; margin-top: 16px; border-radius: 0 4px 4px 0; }" +
+"  </style>" +
+"</head>" +
+"<body>" +
+"  <div class=\"container\">" +
+"    " + emailHeader("Consultancy", "linear-gradient(135deg, #4338ca, #6366f1)") +
+"    <div class=\"content\">" +
+"      <h2>" + title + "</h2>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Name:</span> " + full_name + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Email:</span> " + email + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Phone:</span> " + phone + "</div>" +
+"      <div class=\"field-row\"><span class=\"field-label\">Department:</span> Consultancy</div>" +
+"      <div class=\"message-box\"><p>" + message.replace(/\n/g, "<br/>") + "</p></div>" +
+"    </div>" +
+"    " + emailFooter(year) +
+"  </div>" +
+"</body>" +
+"</html>";
+}

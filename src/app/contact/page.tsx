@@ -55,6 +55,18 @@ function ContactForm() {
           message: `I would like to request a quote for the product "${product.name}".\nDetails: ${product.description}`
         }));
       }
+    } else if (inquiry === "technical-support") {
+      setFormData(prev => ({
+        ...prev,
+        department: "technical-support",
+        message: "I would like to inquire about technical support and biomedical maintenance services."
+      }));
+    } else if (inquiry === "consultancy") {
+      setFormData(prev => ({
+        ...prev,
+        department: "consultancy",
+        message: "I am interested in healthcare management consultancy and institution development advisory services."
+      }));
     }
   }, [searchParams, allProducts]);
 
@@ -184,6 +196,8 @@ function ContactForm() {
                         <SelectItem value="quotation">Quotation</SelectItem>
                         <SelectItem value="sales">Products Inquiry</SelectItem>
                         <SelectItem value="offers">Offers</SelectItem>
+                        <SelectItem value="technical-support">Technical Support</SelectItem>
+                        <SelectItem value="consultancy">Consultancy</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

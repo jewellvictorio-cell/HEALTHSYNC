@@ -7,7 +7,7 @@ import Link from "next/link"
 
 const sampleCategories = [
   { icon: Stethoscope, label: "Medical Equipment", desc: "Diagnostic & surgical systems" },
-  { icon: Microscope, label: "Laboratory Solutions", desc: "Precision instruments & reagents" },
+  { icon: Microscope, label: "Laboratory Equipment", desc: "Precision instruments & reagents" },
   { icon: Package, label: "Medical Supplies", desc: "Consumables & accessories" },
 ]
 

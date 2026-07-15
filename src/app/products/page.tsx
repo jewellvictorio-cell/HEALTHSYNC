@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter, Download, FileText, ShoppingCart, CheckCircle2, ShieldCheck, Truck, Recycle, Box, ChevronRight, Eye, Package, Stethoscope, Activity, FlaskConical, Syringe, Wrench } from "lucide-react"
+import { Search, Filter, Download, FileText, ShoppingCart, ChevronRight, Eye, Package, Stethoscope, Activity, FlaskConical, Syringe, Wrench } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { PRODUCT_CATEGORIES, type Product } from "@/lib/store"
@@ -15,13 +15,7 @@ import { useProducts } from "@/lib/useStore"
 // Sidebar filter list mirrors PRODUCT_CATEGORIES, prefixed with "All"
 const categories = ["All", ...PRODUCT_CATEGORIES]
 
-const packagingBenefits = [
-  { title: "Maximum Protection",   desc: "Ensure products are protected from damage, moisture, dust, and impact.",           icon: ShieldCheck },
-  { title: "Safe Transportation",  desc: "Designed to withstand the rigors of transportation and long-distance delivery.",    icon: Truck },
-  { title: "Quality Materials",    desc: "We use high-quality packaging materials that meet international standards.",        icon: Box },
-  { title: "Eco-Friendly Options", desc: "Sustainable packaging solutions that reduce environmental impact.",                 icon: Recycle },
-  { title: "Tailored Solutions",   desc: "Custom packaging solutions tailored to your specific needs.",                      icon: CheckCircle2 },
-]
+
 
 // ── Product Card ─────────────────────────────────────────────────────────────
 function ProductCard({ product, index, onViewBrochure }: {
@@ -34,29 +28,31 @@ function ProductCard({ product, index, onViewBrochure }: {
       className="group hover:shadow-2xl transition-all duration-500 border-none shadow-sm overflow-hidden flex flex-col bg-white animate-in zoom-in-95 duration-500 fill-mode-both"
       style={{ animationDelay: `${(index % 9) * 80}ms` }}
     >
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        {product.image ? (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
-            unoptimized
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <Package className="h-16 w-16 text-muted-foreground/20" />
-          </div>
-        )}
-        <Badge className="absolute top-3 left-3 bg-white/95 text-primary hover:bg-white backdrop-blur-md border-none shadow-md font-bold text-[10px] uppercase transition-transform group-hover:scale-105">
-          {product.category}
-        </Badge>
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </div>
-      <CardHeader className="p-5 pb-2">
-        <CardTitle className="text-base font-bold group-hover:text-primary transition-colors line-clamp-1">{product.name}</CardTitle>
-        <CardDescription className="line-clamp-2 text-xs leading-relaxed min-h-[32px]">{product.description}</CardDescription>
-      </CardHeader>
+      <Link href={`/products/${product.id}`} className="block cursor-pointer">
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          {product.image ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-110 transition-transform duration-700"
+              unoptimized
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Package className="h-16 w-16 text-muted-foreground/20" />
+            </div>
+          )}
+          <Badge className="absolute top-3 left-3 bg-white/95 text-primary hover:bg-white backdrop-blur-md border-none shadow-md font-bold text-[10px] uppercase transition-transform group-hover:scale-105">
+            {product.category}
+          </Badge>
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </div>
+        <CardHeader className="p-5 pb-2">
+          <CardTitle className="text-base font-bold group-hover:text-primary transition-colors line-clamp-1">{product.name}</CardTitle>
+          <CardDescription className="line-clamp-2 text-xs leading-relaxed min-h-[32px]">{product.description}</CardDescription>
+        </CardHeader>
+      </Link>
       <CardFooter className="p-5 pt-3 mt-auto border-t bg-muted/5 grid grid-cols-2 gap-2">
         {product.brochure && (product.brochure.startsWith("data:") || product.brochure.startsWith("http") || product.brochure.startsWith("/")) ? (
           <Button onClick={(e) => onViewBrochure(e, product.brochure!)} variant="outline" className="w-full gap-1.5 border-2 hover:bg-primary hover:text-white hover:border-primary font-bold text-[10px] uppercase tracking-wider h-10 transition-all hover:scale-[1.02] active:scale-95 shadow-sm p-0">
@@ -177,7 +173,7 @@ function ProductsContent() {
         <div className="container mx-auto px-4 text-center relative z-10 animate-in fade-in slide-in-from-top-8 duration-1000">
           <h1 className="text-4xl font-headline font-bold mb-4 uppercase tracking-tight">Our Solutions Catalog</h1>
           <p className="text-secondary-foreground/70 max-w-2xl mx-auto">
-            Explore our comprehensive range of top-grade medical equipment, supplies, and specialized packaging solutions.
+            Explore our comprehensive range of top-grade medical equipment, supplies, and laboratory solutions.
           </p>
         </div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse" />
@@ -280,7 +276,7 @@ function ProductsContent() {
                     "Laboratory Equipment": FlaskConical,
                     "Consumables | Medical Supplies": Syringe,
                     "Accessories | Medical Supplies": Wrench,
-                    "Packaging Solutions": Package,
+
                   }
                   const CatIcon = iconMap[cat] || Package
                   return (
@@ -321,34 +317,7 @@ function ProductsContent() {
               </div>
             )}
 
-            {/* Packaging Benefits — shown at bottom when Packaging or All is selected */}
-            {(activeCategory === "All" || activeCategory === "Packaging Solutions") && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-                <div className="text-center space-y-2">
-                  <h2 className="text-3xl font-headline font-bold text-secondary uppercase tracking-tight">Our Packaging Benefits</h2>
-                  <p className="text-muted-foreground">Why healthcare institutions trust our specialized transit protection.</p>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {packagingBenefits.map((benefit, i) => (
-                    <Card key={i} className="border-none shadow-md bg-white hover:shadow-xl transition-all duration-300 hover:translate-y-[-4px] group animate-in zoom-in-95 duration-700 fill-mode-both" style={{ animationDelay: `${i * 150}ms` }}>
-                      <CardContent className="p-8 space-y-4">
-                        <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center text-primary transition-all group-hover:bg-primary group-hover:text-white group-hover:rotate-6">
-                          <benefit.icon className="h-7 w-7" />
-                        </div>
-                        <h4 className="font-bold text-secondary text-lg group-hover:text-primary transition-colors">{benefit.title}</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{benefit.desc}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                <div className="mt-10 text-center">
-                  <div className="inline-block bg-white p-8 rounded-2xl border-2 border-primary/10 shadow-xl shadow-primary/5">
-                    <h3 className="text-2xl font-headline font-bold text-secondary mb-3">PACKED WITH CARE, DELIVERED WITH CONFIDENCE.</h3>
-                    <p className="text-muted-foreground text-lg">Your equipment&apos;s safety is our priority.</p>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
